@@ -21,122 +21,210 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:provider/provider.dart';
 import 'package:ahlachat/models/Usermodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class SplashScrean extends StatefulWidget {
   const SplashScrean({Key? key}) : super(key: key);
+
   @override
   State<SplashScrean> createState() => _SplashScreanState();
 }
+
 class _SplashScreanState extends State<SplashScrean> {
-  checklanguage()async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Lang= prefs.getString('Lang');
-    print("language====================================$Lang");
-    print('Lang is $Lang');
-    setState(() {
+  bool _sessionCheckStarted = false;
+  bool _sessionCheckCompleted = false;
 
-    });
+  Future<void> checklanguage() async {
+    final prefs = await SharedPreferences.getInstance();
 
+    Lang = prefs.getString('Lang');
+
+    debugPrint('language: $Lang');
+
+    if (mounted) {
+      setState(() {});
+    }
   }
-  checkemulator()async{
-    // الفحص ده متفعّل بس في وضع الـ Release، عشان تقدر تطور وتختبر
-    // على إيموليتر من غير ما التطبيق يقفل نفسه أثناء التطوير.
-    // لازم يفضل مفعّل في نسخة الإنتاج النهائية.
+
+  Future<void> checkemulator() async {
     if (kReleaseMode) {
-      bool runningOnEmulator = await isRunningOnEmulator();
+      final runningOnEmulator = await isRunningOnEmulator();
 
       if (runningOnEmulator) {
         SystemNavigator.pop();
       }
     }
   }
+
   Future<bool> isRunningOnEmulator() async {
     try {
-      // Get the device information.
       final deviceInfo = await DeviceInfoPlugin().androidInfo;
 
-      // Check if the device is an emulator/simulator.
-      return deviceInfo.model!.toLowerCase().contains('sdk') ||
-          deviceInfo.model!.toLowerCase().contains('emulator') ||
-          deviceInfo.isPhysicalDevice == false;
+      return deviceInfo.model.toLowerCase().contains('sdk') ||
+          deviceInfo.model.toLowerCase().contains('emulator') ||
+          !deviceInfo.isPhysicalDevice;
     } on PlatformException {
-      return true; // Assume emulator if checking fails.
+      return true;
     }
   }
-  void checkConnectitivy() async {
 
-    // ملاحظة: من الإصدار 6 لـ connectivity_plus، checkConnectivity() بترجّع
-    // List<ConnectivityResult> مش ConnectivityResult مفردة، فلازم نستخدم
-    // .contains() بدل المقارنة المباشرة بـ ==
-    List<ConnectivityResult> connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult.contains(ConnectivityResult.mobile) ||
-        connectivityResult.contains(ConnectivityResult.wifi) ||
-        connectivityResult.contains(ConnectivityResult.ethernet)) {
-      SchedulerBinding.instance?.addPostFrameCallback((_) async{
-        await Helper().ids();
-        Helper().checkVersion();
-        Provider.of<LoginViewmodel>(context,listen: false).checklogin(context);
-        Provider.of<LoginViewmodel>(context,listen: false).getAllconstant(context);
-      });
-    } else{
-      SystemNavigator.pop();
-      Dialogs().showtoast('Enternet is offline');
-      Navigator.pushNamed(context, AppConstants.InternetConnection_Screan);
-    }
+  Future<void> checkConnectitivy() async {
+    if (_sessionCheckStarted) return;
 
+    _sessionCheckStarted = true;
 
-  }
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
 
+      if (!mounted) return;
 
-  checklogin(context)async{
-    LoginViewmodel   UserState=Provider.of<LoginViewmodel>(context,listen: false);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Token=prefs.getString('token');
+      final isConnected =
+          connectivityResult.contains(ConnectivityResult.mobile) ||
+              connectivityResult.contains(ConnectivityResult.wifi) ||
+              connectivityResult.contains(ConnectivityResult.ethernet);
 
-    if(Token==null){
+      if (!isConnected) {
+        _sessionCheckStarted = false;
 
-      UserState.UpdateCurrentPage(LoginScrean());
-      // Navigator.pushNamed(context,AppConstants.Login_Screan);
-    }else{
+        Dialogs().showtoast('Internet is offline');
 
-      var  datauser=  prefs.getString('UserData');
-      var userinfo = jsonDecode(datauser!);
-      var user = usermodel.fromJson(userinfo);
-      UserState.MyUSERINFO(user);
-      UserState.waitingConstDate(context);
+        Navigator.pushNamed(
+          context,
+          AppConstants.InternetConnection_Screan,
+        );
 
-      UserId=user.id.toString();
-      if(user.StarterBanner!=null){
-
-        UserState.UpdateCurrentPage(StartBannerScrean());
-      }else{
-
-        UserState.UpdateCurrentPage(ButtomNavigation());
+        return;
       }
 
-    }
+      await Helper().ids();
+      Helper().checkVersion();
 
+      if (!mounted) return;
+
+      await checklogin();
+
+      if (!mounted) return;
+
+      await Provider.of<LoginViewmodel>(
+        context,
+        listen: false,
+      ).getAllconstant(context);
+    } catch (e, stackTrace) {
+      debugPrint('CONNECTIVITY CHECK ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      _sessionCheckStarted = false;
+    }
   }
+
+  Future<void> checklogin() async {
+    final userState = Provider.of<LoginViewmodel>(
+      context,
+      listen: false,
+    );
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final token = prefs.getString('token');
+      final dataUser = prefs.getString('UserData');
+
+      debugPrint(
+        'SPLASH TOKEN EXISTS: '
+            '${token != null && token.trim().isNotEmpty}',
+      );
+
+      debugPrint(
+        'SPLASH USER DATA EXISTS: '
+            '${dataUser != null && dataUser.isNotEmpty}',
+      );
+
+      if (token == null ||
+          token.trim().isEmpty ||
+          dataUser == null ||
+          dataUser.isEmpty) {
+        userState.UpdateCurrentPage(LoginScrean());
+        _sessionCheckCompleted = true;
+        return;
+      }
+
+      final decoded = jsonDecode(dataUser);
+
+      if (decoded is! Map) {
+        await prefs.remove('token');
+        await prefs.remove('UserData');
+
+        userState.UpdateCurrentPage(LoginScrean());
+        _sessionCheckCompleted = true;
+        return;
+      }
+
+      final userData = Map<String, dynamic>.from(decoded);
+      final user = usermodel.fromJson(userData);
+
+      if (user.id == null) {
+        await prefs.remove('token');
+        await prefs.remove('UserData');
+
+        userState.UpdateCurrentPage(LoginScrean());
+        _sessionCheckCompleted = true;
+        return;
+      }
+
+      UserId = user.id.toString();
+
+      userState.MyUSERINFO(user);
+
+      userState.waitingConstDate(context);
+
+      if (!mounted) return;
+
+      if (user.StarterBanner != null) {
+        userState.UpdateCurrentPage(StartBannerScrean());
+      } else {
+        userState.UpdateCurrentPage(ButtomNavigation());
+      }
+
+      _sessionCheckCompleted = true;
+    } catch (e, stackTrace) {
+      debugPrint('SPLASH LOGIN ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      userState.UpdateCurrentPage(LoginScrean());
+      _sessionCheckCompleted = true;
+    }
+  }
+
   @override
   void initState() {
-    // إخفاء شاشة السبلاش الأصلية (Native) دلوقتي، بما إن الشاشة دي
-    // هي أول واجهة فلاتر بترسمها فعليًا. من غير السطر ده، السبلاش
-    // الأصلي بيفضل واقف فوق كل حاجة للأبد حتى لو التطبيق شغال تحته.
+    super.initState();
+
     FlutterNativeSplash.remove();
 
     checkemulator();
-    checklogin(context);
+    checklanguage();
     checkConnectitivy();
     getIPAddress();
-    // getPublicIP();
-
-    super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    LoginViewmodel   UserState=Provider.of<LoginViewmodel>(context,listen: true);
-    return UserState.CurrentBage;
+
+    final userState = Provider.of<LoginViewmodel>(
+      context,
+      listen: true,
+    );
+
+    if (!_sessionCheckCompleted) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return userState.CurrentBage;
   }
 }

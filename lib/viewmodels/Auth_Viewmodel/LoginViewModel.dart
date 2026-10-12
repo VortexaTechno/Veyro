@@ -1709,21 +1709,40 @@ Future<String?>  getId() async {
 
     notifyListeners();
   }
-  RegesterNewUser2({context}) async {
-    SmartDialog.showLoading( );
-    await userapi().RegesterNewUser2(password:  PasswordComp ,context: context,image: Comimage,year:year,month:month ,day:day,name:UsernameComp,city:Name2 ,Flag: Flag2,ginder:ginder ).then((value) {
-      if(value.id!=null){
-        userinfo=value;
 
-      }else{
-        Dialogs().showtoast(getLang(context:NavigationService.navigatorKey.currentContext,key: "Sorry"));
+  Future<void> RegesterNewUser2({required BuildContext context}) async {
+    SmartDialog.showLoading();
 
+    try {
+      final value = await userapi().RegesterNewUser2(
+        password: PasswordComp,
+        context: context,
+        image: Comimage,
+        year: year,
+        month: month,
+        day: day,
+        name: UsernameComp,
+        city: Name2,
+        Flag: Flag2,
+        ginder: ginder,
+      );
+
+      if (value.id != null) {
+        userinfo = value;
       }
+    } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '');
+
+      print('ERROR MESSAGE TO DISPLAY: $message');
+
+      Dialogs().showtoast(message);
+    } finally {
       SmartDialog.dismiss();
-    });
+    }
 
     notifyListeners();
   }
+
   // Future<User?> signInWithFacebook({context}) async {
   //   final fb = FacebookLogin();
   //   final response = await fb.logIn();

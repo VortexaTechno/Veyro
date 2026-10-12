@@ -1982,51 +1982,39 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
 
     return userinfo;
   }
-  RegesterNewUser2({
-    password,
-    context,
-    ginder,
-    Flag,
-    city,
-    image,
-    name,
-    year,
-    month,
-    day,
+
+  Future<dynamic> RegesterNewUser2({
+    required password,
+    required context,
+    required ginder,
+    required Flag,
+    required city,
+    required image,
+    required name,
+    required year,
+    required month,
+    required day,
   }) async {
     try {
-      // =========================
-      // URL
-      // =========================
       const String endpoint = '/api/SignUpaccountwithoutphone';
 
-      print('');
       print('========================================');
-      print('🚀 REGISTER NEW USER');
+      print('REGISTER NEW USER');
       print('========================================');
+      print('API URL: ${dio.options.baseUrl}$endpoint');
+      print('METHOD: POST');
 
-      print('🌐 API URL: ${dio.options.baseUrl}$endpoint');
-      print('📌 METHOD: POST');
+      print('REQUEST DATA:');
+      print('name: $name');
+      print('year: $year');
+      print('month: $month');
+      print('day: $day');
+      print('image: ${image?.path}');
+      print('notifi_token: $notifitoken');
+      print('city: $city');
+      print('Flag: $Flag');
+      print('ginder: $ginder');
 
-      // =========================
-      // Request Data
-      // =========================
-      print('');
-      print('📤 REQUEST DATA:');
-      print('name          : $name');
-      print('year          : $year');
-      print('month         : $month');
-      print('day           : $day');
-      print('image         : ${image?.path}');
-      print('notifi_token  : $notifitoken');
-      print('city          : $city');
-      print('Flag          : $Flag');
-      print('ginder        : $ginder');
-      print('password      : $password');
-
-      // =========================
-      // Form Data
-      // =========================
       final map = {
         "name": name.toString(),
         "year": year.toString(),
@@ -2045,48 +2033,34 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
 
       final FormData formData = FormData.fromMap(map);
 
-      print('');
-      print('📦 FORM DATA CREATED');
-      print('➡️ Sending request...');
-
-      // =========================
-      // API REQUEST
-      // =========================
       final Response response2 = await dio.post(
         endpoint,
         data: formData,
       );
 
-      // =========================
-      // RESPONSE
-      // =========================
-      print('');
-      print('========================================');
-      print('✅ API RESPONSE');
-      print('========================================');
+      print('STATUS CODE: ${response2.statusCode}');
+      print('RESPONSE DATA: ${response2.data}');
 
-      print('🌐 URL: ${response2.requestOptions.uri}');
-      print('📌 METHOD: ${response2.requestOptions.method}');
-      print('📊 STATUS CODE: ${response2.statusCode}');
-      print('📊 STATUS MESSAGE: ${response2.statusMessage}');
-      print('📥 RESPONSE DATA: ${response2.data}');
+      final responseData = response2.data;
 
-      // =========================
-      // SUCCESS
-      // =========================
+      if (responseData is Map &&
+          responseData['status'] == false) {
+        throw Exception(
+          responseData['msg'] ??
+              responseData['message'] ??
+              'Request failed',
+        );
+      }
+
       if (response2.statusCode == 200) {
-        print('');
-        print('🎉 REGISTER SUCCESS');
-        print('========================================');
-
-        if (response2.data['users'] != null) {
-          userinfo = usermodel.fromJson(response2.data['users']);
-
-          print('👤 USER ID: ${userinfo.id}');
-          print('🔑 TOKEN: ${userinfo.rememperToken}');
+        if (responseData is! Map ||
+            responseData['users'] == null) {
+          throw Exception('Invalid server response');
         }
 
-        SharedPreferences prefs =
+        userinfo = usermodel.fromJson(responseData['users']);
+
+        final SharedPreferences prefs =
         await SharedPreferences.getInstance();
 
         await prefs.setString(
@@ -2102,9 +2076,6 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
         Token = userinfo.rememperToken.toString();
         UserId = userinfo.id.toString();
 
-        print('💾 Token saved successfully');
-        print('💾 UserData saved successfully');
-
         if (userinfo.music != null &&
             userinfo.music != '' &&
             Gmail != null) {
@@ -2113,85 +2084,46 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
           );
         }
 
-        print('➡️ Navigating to Bottom Navigation');
-
         Navigator.pushNamed(
           context,
           AppConstants.Buttom_Navigation,
         );
-      } else {
-        print('');
-        print('⚠️ REQUEST FINISHED WITH NON-200 STATUS');
-        print('Status: ${response2.statusCode}');
-        print('Response: ${response2.data}');
+
+        return userinfo;
       }
-    } on DioError catch (e) {
-      print('');
-      print('========================================');
-      print('❌ DIO ERROR');
-      print('========================================');
 
-      print('🌐 URL: ${e.requestOptions.uri}');
-      print('📌 METHOD: ${e.requestOptions.method}');
-      print('📊 STATUS CODE: ${e.response?.statusCode}');
-      print('📊 STATUS MESSAGE: ${e.response?.statusMessage}');
-      print('📥 RESPONSE DATA: ${e.response?.data}');
-      print('❌ ERROR TYPE: ${e.type}');
-      print('❌ ERROR MESSAGE: ${e.message}');
+      throw Exception(
+        responseData is Map
+            ? responseData['msg'] ??
+            responseData['message'] ??
+            'Request failed'
+            : 'Request failed',
+      );
 
-      // Show server error
-      if (e.response != null) {
-        final data = e.response?.data;
+    } on DioException catch (e) {
+      final data = e.response?.data;
 
-        print('');
-        print('🔴 SERVER ERROR DATA: $data');
+      if (data is Map) {
+        final message =
+            data['msg'] ??
+                data['message'] ??
+                data['error'];
 
-        if (data is Map) {
-          print('errNum: ${data['errNum']}');
-          print('msg: ${data['msg']}');
-          print('message: ${data['message']}');
-          print('error: ${data['error']}');
-
-          final errorMessage =
-              data['msg'] ??
-                  data['message'] ??
-                  data['error'] ??
-                  'Request failed';
-
-          Dialogs().ShowErrorToast(
-            errorMessage.toString(),
-            context,
-          );
-        } else {
-          Dialogs().ShowErrorToast(
-            'Server Error: ${e.response?.statusCode}',
-            context,
-          );
+        if (message != null &&
+            message.toString().isNotEmpty) {
+          throw Exception(message.toString());
         }
-      } else {
-        // No response from server
-        Dialogs().ShowErrorToast(
-          'Connection error: ${e.message}',
-          context,
-        );
       }
-    } catch (e, stackTrace) {
-      print('');
-      print('========================================');
-      print('❌ UNKNOWN ERROR');
-      print('========================================');
 
-      print('Error: $e');
-      print('StackTrace: $stackTrace');
-
-      Dialogs().ShowErrorToast(
-        e.toString(),
-        context,
+      throw Exception(
+        e.response == null
+            ? 'Connection error. Please try again.'
+            : 'Request failed: ${e.response?.statusCode}',
       );
     }
 
-    return userinfo;
   }
+
   Future<bool> SignOut({context}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print('Token is ======> $Token');
