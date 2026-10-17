@@ -588,18 +588,87 @@ MyUSERINFO(usermodel U){
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-  Future<void> signInWithGoogle() async {
+  Future<void> signInWithGoogle(BuildContext context) async {
     try {
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(
+        serverClientId:
+        '873748841955-l09in6dqp49ld9f00mt3jnvadp7qjalj.apps.googleusercontent.com',
+      );
 
-      final GoogleSignInAccount account =
-      await _googleSignIn.authenticate();
+      final GoogleSignInAccount account = await _googleSignIn.authenticate();
 
-      print('Google User: ${account.email}');
+      print('========== GOOGLE ACCOUNT ==========');
+      print('Google Account ID: ${account.id}');
+      print('Email: ${account.email}');
       print('Name: ${account.displayName}');
-      print('ID: ${account.id}');
-    } catch (e) {
-      print('Google Sign In Error: $e');
+      print('====================================');
+
+      final GoogleSignInAuthentication googleAuth = account.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+
+      final User? firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        print('Firebase user is null');
+        return;
+      }
+
+      final String? firebaseToken = await firebaseUser.getIdToken();
+
+      print('Firebase UID: ${firebaseUser.uid}');
+      print('Firebase Token: $firebaseToken');
+
+      final response = await Dio().post(
+        'https://egyptiantechs.com/api/loginGoogle',
+        data: {
+          'email': account.email,
+        },
+      );
+
+      print('Google Login API Status: ${response.statusCode}');
+      print('Google Login API Response: ${response.data}');
+
+      final responseData = response.data;
+
+      if (responseData['status'] != true) {
+        print('Google Login API failed: ${responseData['msg']}');
+        return;
+      }
+
+      final users = responseData['users'];
+
+      if (users == null || users['id'] == null) {
+        print('Google Login API: users.id is missing');
+        print('Response: $responseData');
+        return;
+      }
+
+      UserId = users['id'].toString();
+
+      print('Backend User ID: $UserId');
+
+      await UserLoginVerify(context: context);
+
+    } on DioException catch (e, stackTrace) {
+      print('========== GOOGLE API ERROR ==========');
+      print('URL: ${e.requestOptions.uri}');
+      print('Method: ${e.requestOptions.method}');
+      print('Request Data: ${e.requestOptions.data}');
+      print('Status Code: ${e.response?.statusCode}');
+      print('Response Data: ${e.response?.data}');
+      print('======================================');
+      print(stackTrace);
+    } catch (e, stackTrace) {
+      print('GOOGLE LOGIN ERROR: $e');
+      print(stackTrace);
     }
   }
   SearchGetusers({context,text}) async {

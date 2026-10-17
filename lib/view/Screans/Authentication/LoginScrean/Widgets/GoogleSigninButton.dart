@@ -12,32 +12,37 @@ class GoogleSignin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: false) ;
+    LoginViewmodel user = Provider.of<LoginViewmodel>(context, listen: false);
 
-    return     InkWell(onTap:(){
-
-
-        user.signInWithGoogle();
-
-
-
-
-
-
-
-    } ,
-      child: Container(width: SizeConfig.screenWidth!/1.4,
+    return InkWell(
+      onTap: () {
+        user.signInWithGoogle(context);
+      },
+      child: Container(
+        width: SizeConfig.screenWidth! / 1.4,
         height: 50,
-        decoration: BoxDecoration(color: whitecolor,borderRadius: BorderRadius.circular(5) ,border: Border.all(color: Colors.black12)),
+        decoration: BoxDecoration(
+            color: whitecolor,
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(color: Colors.black12)),
         child: Padding(
           padding: HWPadding10,
-          child: Row(mainAxisSize: MainAxisSize.min,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               WSized5,
-              Text(getLang( context: context, key: "Google_Sign_in"),textAlign: TextAlign.end,textDirection: TextDirection.rtl,style: style2.copyWith(height: 1,fontWeight: FontWeight.bold) ),
-              Image.asset(Images.Google,width: SizeConfig.TenSize!*2.7,height: SizeConfig.TenSize!*2.7,),
+              Text(getLang(context: context, key: "Google_Sign_in"),
+                  textAlign: TextAlign.end,
+                  textDirection: TextDirection.rtl,
+                  style:
+                  style2.copyWith(height: 1, fontWeight: FontWeight.bold)),
+              Image.asset(
+                Images.Google,
+                width: SizeConfig.TenSize! * 2.7,
+                height: SizeConfig.TenSize! * 2.7,
+              ),
             ],
           ),
         ),

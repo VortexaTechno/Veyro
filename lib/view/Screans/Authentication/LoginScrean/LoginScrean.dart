@@ -75,8 +75,8 @@ class _LoginScreanState extends State<LoginScrean> {
 
                 Spacer(),
 
-              // SizedBox(height: SizeConfig.TenSize!*10,),
-              //   const GoogleSignin(),
+              SizedBox(height: SizeConfig.TenSize!*10,),
+                const GoogleSignin(),
                 HSized20,
                 PhoneSignin(),
                 HSized20, 
