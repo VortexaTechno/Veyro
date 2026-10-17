@@ -45,22 +45,39 @@ class NavigationService {
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 }
 
-void main() async {
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await PurchasaApi.init();
+
   await Firebase.initializeApp();
 
-  checklanguage();
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await PurchasaApi.init();
+    print('RevenueCat initialized successfully');
+  } catch (e, stackTrace) {
+    print('RevenueCat initialization failed: $e');
+    print(stackTrace);
+  }
 
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  // getnotifitoken();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]).then((_) {
-    WakelockPlus.enable();
-    runApp(MyApp());
-  });
+  checklanguage();
+
+  WidgetsBinding widgetsBinding =
+  WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterNativeSplash.preserve(
+    widgetsBinding: widgetsBinding,
+  );
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  await WakelockPlus.enable();
+
+  runApp(MyApp());
 }
+
 
 getnotifitoken() async {
   notifitoken = await FirebaseMessaging.instance.getToken();

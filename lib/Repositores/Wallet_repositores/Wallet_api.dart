@@ -1,78 +1,146 @@
+
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
-import 'package:purchases_flutter/models/offering_wrapper.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import '../../models/PayPalPackage.dart';
 import '../../util/app_constants.dart';
 
 class PurchasaApi {
-  static const _Apikey='goog_QbGwYjyXlePJXAYCANAMIAAbvsh';
-  List  <PayPalPackage> PayPalPackages=[];
-  var dio = Dio(
+  static const String _apiKey = 'goog_QbGwYjyXlePJXAYCANAMIAAbvsh';
+
+  final List<PayPalPackage> PayPalPackages = [];
+
+  final Dio dio = Dio(
     BaseOptions(
       baseUrl: AppConstants.BASE_URL,
       headers: {
         'Accept': 'application/json',
         'Connection': 'Keep-Alive',
-        'Authorization':Token,
-        'awqeASERQW':'8/325*mAIOEN',
-        'userid':UserId.toString(),
-        'UserIP':UserIP,
+        'Authorization': Token,
+        'awqeASERQW': '8/325*mAIOEN',
+        'userid': UserId.toString(),
+        'UserIP': UserIP,
       },
     ),
   );
-  static Future init()async{
-    await Purchases.setDebugLogsEnabled(true);
-    await Purchases.setup(_Apikey);
+
+  // Initialize RevenueCat
+  static Future<void> init() async {
+    print('========== REVENUECAT INIT ==========');
+
+    try {
+      await Purchases.setDebugLogsEnabled(true);
+      await Purchases.setup(_apiKey);
+
+      print('REVENUECAT INITIALIZED SUCCESSFULLY');
+    } on PlatformException catch (e, stackTrace) {
+      print('REVENUECAT INIT ERROR');
+      print('CODE: ${e.code}');
+      print('MESSAGE: ${e.message}');
+      print('DETAILS: ${e.details}');
+      print('STACK TRACE: $stackTrace');
+      rethrow;
+    } catch (e, stackTrace) {
+      print('UNEXPECTED INIT ERROR: $e');
+      print('STACK TRACE: $stackTrace');
+      rethrow;
+    }
+
+    print('=====================================');
   }
-  static Future<List<Offering>> fetchoffers()async {
-    await Purchases.setAttributes({'id':UserId.toString()});
-    try{
-      final offerings= await Purchases.getOfferings();
-      final Current=offerings.current;
-      print(Current);
-      return Current==null?[]: [Current];
-    }on PlatformException catch(e){
+
+  // Fetch RevenueCat Offerings
+  static Future<List<Offering>> fetchoffers() async {
+    print('========== REVENUECAT OFFERS ==========');
+
+    try {
+      await Purchases.setAttributes({
+        'id': UserId.toString(),
+      });
+
+      print('USER ID: $UserId');
+      print('Fetching offerings...');
+
+      final Offerings offerings = await Purchases.getOfferings();
+
+      print('ALL OFFERINGS: ${offerings.all}');
+
+      final Offering? current = offerings.current;
+
+      if (current == null) {
+        print('NO CURRENT OFFERING FOUND');
+        print('Check your RevenueCat Offering configuration.');
+        print('======================================');
+
+        return [];
+      }
+
+      print('CURRENT OFFERING: $current');
+      print('OFFERING IDENTIFIER: ${current.identifier}');
+      print('AVAILABLE PACKAGES COUNT: '
+          '${current.availablePackages.length}');
+
+      for (final Package package in current.availablePackages) {
+        print('--------------------------------------');
+        print('PACKAGE IDENTIFIER: ${package.identifier}');
+        print('PACKAGE TYPE: ${package.packageType}');
+        print('STORE PRODUCT: ${package.storeProduct}');
+        print('PRODUCT IDENTIFIER: '
+            '${package.storeProduct.identifier}');
+        print('PRODUCT TITLE: ${package.storeProduct.title}');
+        print('PRODUCT PRICE: ${package.storeProduct.price}');
+      }
+
+      print('========== OFFERS COMPLETED ==========');
+
+      return [current];
+    } on PlatformException catch (e, stackTrace) {
+      print('========== REVENUECAT ERROR ==========');
+      print('ERROR CODE: ${e.code}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('ERROR DETAILS: ${e.details}');
+      print('STACK TRACE: $stackTrace');
+      print('======================================');
+
+      return [];
+    } catch (e, stackTrace) {
+      print('UNEXPECTED REVENUECAT ERROR: $e');
+      print('STACK TRACE: $stackTrace');
+
       return [];
     }
   }
-  Future<List<PayPalPackage>> GeyPayPalPackages() async {
+
+  // Purchase RevenueCat Package
+  static Future<bool> purchesPackage(Package package) async {
+    print('========== PURCHASE PACKAGE ==========');
+    print('PACKAGE IDENTIFIER: ${package.identifier}');
+    print('PRODUCT: ${package.storeProduct}');
+
     try {
-
-      Response response2 = await dio.get(
-        '/api/GetPaypalPackage',
-      );
-
-
-      if (response2.statusCode == 200) {
-
-        List list =response2.data['PaypalPackage'] ;
-
-        list.forEach((element) {
-          PayPalPackages.add(PayPalPackage.fromJson(element));
-        });
-
-      }
-    } catch (e) {
-
-
-    }
-
-    return PayPalPackages;
-  }
-  static Future<bool> purchesPackage(Package package)async {
-
-    try{
-
+      final PurchaseResult customerInfo =
       await Purchases.purchasePackage(package);
-      return true;
 
-    }catch(e){
+      print('PURCHASE SUCCESS');
+      print('CUSTOMER INFO: $customerInfo');
+      print('======================================');
+
+      return true;
+    } on PlatformException catch (e, stackTrace) {
+      print('========== PURCHASE ERROR ==========');
+      print('ERROR CODE: ${e.code}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('ERROR DETAILS: ${e.details}');
+      print('STACK TRACE: $stackTrace');
+      print('====================================');
+
+      return false;
+    } catch (e, stackTrace) {
+      print('UNEXPECTED PURCHASE ERROR: $e');
+      print('STACK TRACE: $stackTrace');
+
       return false;
     }
-
   }
-
-
 }
