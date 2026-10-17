@@ -1244,11 +1244,10 @@ int target=0;
 
 
 
+
   Future<MyVipmodel?> ByeVip({VipModel? Vip, context}) async {
-
-
     try {
-      FormData formData = new FormData.fromMap({
+      FormData formData = FormData.fromMap({
         "user_id": UserId.toString(),
         "vip_id": Vip?.id.toString(),
         "days": Vip?.day.toString(),
@@ -1259,31 +1258,57 @@ int target=0;
         'api/ByeVip',
         data: formData,
       );
-       
+
+      // Print response details
+      print('========== ByeVip RESPONSE ==========');
+      print('STATUS CODE: ${response2.statusCode}');
+      print('RESPONSE DATA: ${response2.data}');
+      print('RESPONSE HEADERS: ${response2.headers}');
+      print('=====================================');
+
       if (response2.statusCode == 200) {
-
-
-  myvip = MyVipmodel.fromJson(response2.data['MyVip']);
-
-      }
-    } catch (e) {
-      print(e);
-      if (e is DioError) {
-
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
+        myvip = MyVipmodel.fromJson(response2.data['MyVip']);
       } else {
-        print(e);
+        print('ByeVip FAILED WITH STATUS: ${response2.statusCode}');
       }
+    } on DioException catch (e) {
+      print('========== ByeVip DIO ERROR ==========');
+      print('REQUEST URL: ${e.requestOptions.uri}');
+      print('REQUEST METHOD: ${e.requestOptions.method}');
+      print('STATUS CODE: ${e.response?.statusCode}');
+      print('RESPONSE DATA: ${e.response?.data}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('ERROR TYPE: ${e.type}');
+      print('======================================');
+
+      final data = e.response?.data;
+
+      if (context != null && data is Map) {
+        final errorMessage =
+            data['msg'] ??
+                data['message'] ??
+                data['errNum'] ??
+                'حدث خطأ أثناء شراء VIP';
+
+        Dialogs().ShowErrorRegesterToast(
+          errorMessage.toString(),
+          context,
+        );
+      }
+    } catch (e, stackTrace) {
+      print('========== ByeVip UNKNOWN ERROR ==========');
+      print('ERROR: $e');
+      print('STACK TRACE: $stackTrace');
+      print('==========================================');
     }
 
     return myvip;
   }
-  Future<MyVipmodel?> UseVip({MyVipmodel? Vip }) async {
 
 
+  Future<MyVipmodel?> UseVip({MyVipmodel? Vip}) async {
     try {
-      FormData formData = new FormData.fromMap({
+      FormData formData = FormData.fromMap({
         "user_id": UserId.toString(),
         "Myvip_id": Vip?.id.toString(),
       });
@@ -1293,19 +1318,37 @@ int target=0;
         data: formData,
       );
 
+      // Print response details
+      print('========== UseVip RESPONSE ==========');
+      print('STATUS CODE: ${response2.statusCode}');
+      print('RESPONSE DATA: ${response2.data}');
+      print('RESPONSE HEADERS: ${response2.headers}');
+      print('=====================================');
+
       if (response2.statusCode == 200) {
-
-
         myvip = MyVipmodel.fromJson(response2.data);
-
+      } else {
+        print('UseVip FAILED WITH STATUS: ${response2.statusCode}');
       }
-    } catch (e) {
-      print(e);
-
+    } on DioException catch (e) {
+      print('========== UseVip DIO ERROR ==========');
+      print('REQUEST URL: ${e.requestOptions.uri}');
+      print('REQUEST METHOD: ${e.requestOptions.method}');
+      print('STATUS CODE: ${e.response?.statusCode}');
+      print('RESPONSE DATA: ${e.response?.data}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('ERROR TYPE: ${e.type}');
+      print('======================================');
+    } catch (e, stackTrace) {
+      print('========== UseVip UNKNOWN ERROR ==========');
+      print('ERROR: $e');
+      print('STACK TRACE: $stackTrace');
+      print('==========================================');
     }
 
     return myvip;
   }
+
   Future<bool> ByeBackages({coins,cost,kind,context}) async {
    bool Status=false;
     try {

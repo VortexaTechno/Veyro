@@ -31,39 +31,87 @@ List<Shop> AllShop=[];
   );
 
 
-  Future<List<Shop>> getShop({context}) async {
-     try {
 
+  Future<List<Shop>> getShop({context}) async {
+    AllShop.clear();
+
+    try {
       Response response2 = await dio.get(
         '/api/GetShopCategory',
       );
-       
+
+      print('========== GetShopCategory RESPONSE ==========');
+      print('STATUS CODE: ${response2.statusCode}');
+      print('RESPONSE DATA: ${response2.data}');
+      print('RESPONSE HEADERS: ${response2.headers}');
+      print('===============================================');
 
       if (response2.statusCode == 200) {
-    
-   List list =response2.data['ShopCategory'] ;
- 
-  list.forEach((element) {
-  AllShop.add(Shop.fromJson(element));
-  });
- 
+        final data = response2.data;
+
+        if (data is Map && data['ShopCategory'] is List) {
+          final List list = data['ShopCategory'];
+
+          for (final element in list) {
+            try {
+              AllShop.add(
+                Shop.fromJson(
+                  Map<String, dynamic>.from(element),
+                ),
+              );
+            } catch (e, stackTrace) {
+              print('========== SHOP PARSING ERROR ==========');
+              print('ERROR: $e');
+              print('SHOP DATA: $element');
+              print('STACK TRACE: $stackTrace');
+              print('========================================');
+            }
+          }
+        } else {
+          print('INVALID RESPONSE FORMAT');
+          print('EXPECTED KEY: ShopCategory (List)');
+          print('ACTUAL RESPONSE: $data');
+        }
       }
-    } catch (e) {
+    } on DioException catch (e) {
+      print('========== GetShopCategory DIO ERROR ==========');
+      print('REQUEST URL: ${e.requestOptions.uri}');
+      print('REQUEST METHOD: ${e.requestOptions.method}');
+      print('STATUS CODE: ${e.response?.statusCode}');
+      print('RESPONSE DATA: ${e.response?.data}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('ERROR TYPE: ${e.type}');
+      print('===============================================');
 
-      if (e is DioError) {
-         
-        Dialogs().ShowErrorToast(e.response!.data['errNum'],context);
+      final responseData = e.response?.data;
 
-      } else {
+      if (context != null && responseData is Map) {
+        final errorMessage =
+            responseData['msg'] ??
+                responseData['message'] ??
+                responseData['errNum'] ??
+                'حدث خطأ أثناء تحميل المتجر';
 
-
-
+        Dialogs().ShowErrorToast(
+          errorMessage.toString(),
+          context,
+        );
+      } else if (context != null) {
+        Dialogs().ShowErrorToast(
+          'حدث خطأ أثناء الاتصال بالسيرفر',
+          context,
+        );
       }
+    } catch (e, stackTrace) {
+      print('========== GetShopCategory UNKNOWN ERROR ==========');
+      print('ERROR: $e');
+      print('STACK TRACE: $stackTrace');
+      print('====================================================');
     }
-
 
     return AllShop;
   }
+
 
   Future<bool> ByeItem({itemId,day,price, context,categoryid}) async {
     bool check=false;

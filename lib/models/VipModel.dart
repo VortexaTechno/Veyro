@@ -45,32 +45,60 @@ class VipModel {
         this.urlprofileEntry
       });
 
+
   VipModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    gif = AppConstants.Image_URL+json['gif'];
-    name = json['name'];
-    status = json['status'];
-    vipicon = AppConstants.Image_URL +json['vipicon'];
+    String? nullableString(dynamic value) {
+      if (value == null) return null;
+      return value.toString();
+    }
 
-    backgroundimage = json['background_image']==null?null: AppConstants.Image_URL +json['background_image'];
+    int? nullableInt(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value.toString());
+    }
 
-    urlentry =AppConstants.Image_URL + json['Entry'];
-    urlframe =AppConstants.Image_URL + json['Frame'];
-    entry = json['Entry'];
-    frame = json['Frame'];
+    String? imageUrl(dynamic value) {
+      if (value == null || value.toString().isEmpty) {
+        return null;
+      }
 
-    level = json['Level'];
-    cost = json['cost'];
-    specialID = json['SpecialID'];
-    profileEntry = json['ProfileEntry']==null?null:AppConstants.Image_URL+json['ProfileEntry'];
-    bubbles=json['ProfileEntry']==null?null:json['ProfileEntry'];
-    coloredMessage = json['ColoredMessage']==null?null: json['ColoredMessage'];
-    hidden = json['Hidden']==null?null: json['Hidden'];
+      return '${AppConstants.Image_URL}${value.toString()}';
+    }
 
-    day=json['days'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
+    id = nullableInt(json['id']);
+
+    gif = imageUrl(json['Gif'] ?? json['gif']);
+    name = nullableString(json['name']);
+    status = nullableInt(json['status']);
+    vipicon = imageUrl(json['vipicon']);
+
+    backgroundimage = imageUrl(json['background_image']);
+
+    urlentry = imageUrl(json['Entry']);
+    urlframe = imageUrl(json['Frame']);
+
+    entry = nullableString(json['Entry']);
+    frame = nullableString(json['Frame']);
+
+    level = nullableInt(json['Level']);
+    cost = nullableInt(json['cost']);
+    specialID = nullableInt(json['SpecialID']);
+
+    profileEntry = imageUrl(json['ProfileEntry']);
+    urlprofileEntry = imageUrl(json['ProfileEntry']);
+    bubbles = nullableString(json['ProfileEntry']);
+
+    coloredMessage = json['ColoredMessage'];
+    hidden = json['Hidden'];
+
+    day = nullableInt(json['days']);
+
+    createdAt = nullableString(json['created_at']);
+    updatedAt = nullableString(json['updated_at']);
   }
+
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
