@@ -20,7 +20,7 @@ class GlopelViewmodel extends ChangeNotifier{
 
   pusherinit()async{
     await Glopalpusher.init(
-        apiKey: "c180a89af5c912971407",
+        apiKey: "8fa13ab9035fe6dc3f9a",
         cluster: "mt1",
       onConnectionStateChange: (current, previous) {
         print('🔗 PUSHER STATE: $previous → $current');

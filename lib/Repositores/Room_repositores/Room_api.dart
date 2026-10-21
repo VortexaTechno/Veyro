@@ -1677,7 +1677,7 @@ KickJoinadminuser({context,room_id,user_id})async{
     return update;
   }
   Future<bool> sendmessage({content, Roomid}) async {
-    bool sent = false; // الافتراضي فشل، ينجح بس لو السيرفر رد 200
+    bool sent = false;
     try {
       FormData formData = FormData.fromMap({
         "user_id": UserId.toString(),
