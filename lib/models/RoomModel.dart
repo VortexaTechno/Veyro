@@ -83,7 +83,7 @@ class RoomModel {
     userNumber = json['user_number'];
     adminId = json['admin_id'];
     locked = json['Locked'];
-    state = json['state'];
+    state = json['status'];
     Category=json['Category'];
     city=json['city'];
     createdAt = json['created_at'];
@@ -139,7 +139,7 @@ class RoomModel {
     data['user_number'] = this.userNumber;
     data['admin_id'] = this.adminId;
     data['Locked'] = this.locked;
-    data['state'] = this.state;
+    data['status'] = this.state;
     data['FollowRoom']=this.FollowRoom;
     data['created_at'] = this.createdAt;
     data['updated_at'] = this.updatedAt;

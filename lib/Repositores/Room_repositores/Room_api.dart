@@ -486,26 +486,53 @@ class Roomapi extends RoomRepository {
 
     return JoinRoom;
   }
-  Future<List<RoomModel>>  Rooms(context)async {
- Index=2;
+  Future<List<RoomModel>> Rooms(context) async {
+    Index = 2;
+
     try {
-      Response response2 = await dio.get(
+      final response = await dio.get(
         'https://egyptiantechs.com/api/GetRooms/$SelectedRoomCategory',
       );
 
-      if (response2.statusCode == 200) {
-        List list =response2.data['Rooms']['data'];
-        list.forEach((element) {
-          ImportantRooms.add(RoomModel.fromJson(element));
-        });
+      if (response.statusCode == 200) {
+        final data = response.data;
 
+        if (data is Map && data['Rooms'] is Map) {
+          final List list = data['Rooms']['data'] ?? [];
+
+          // مسح القائمة القديمة قبل إعادة التحميل
+          ImportantRooms.clear();
+
+          for (final element in list) {
+            final room = RoomModel.fromJson(
+              Map<String, dynamic>.from(element),
+            );
+
+            print(
+              '🏠 ROOM ID: ${room.id} | '
+                  'NAME: ${room.name} | '
+                  'STATE: ${room.state} | '
+                  'LOCKED: ${room.locked}',
+            );
+
+            ImportantRooms.add(room);
+          }
+
+          print(
+            '✅ ImportantRooms count: ${ImportantRooms.length}',
+          );
+        }
       }
-    } catch (e) {
-      print(e);
-         }
+    } on DioException catch (e) {
+      print('❌ GetRooms URL: ${e.requestOptions.uri}');
+      print('❌ GetRooms STATUS: ${e.response?.statusCode}');
+      print('❌ GetRooms RESPONSE: ${e.response?.data}');
+    } catch (e, stackTrace) {
+      print('❌ GetRooms error: $e');
+      print(stackTrace);
+    }
 
     return ImportantRooms;
-
   }
   Future<List<RoomModel>>  getFixedRooms(context)async {
 
