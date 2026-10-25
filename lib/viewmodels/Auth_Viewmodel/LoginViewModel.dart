@@ -1330,21 +1330,31 @@ print(userinfo?.MessageNumber);
     });
     notifyListeners();
   }
-  UserLoginVerify({context,Parimater}) async {
+  Future<void> UserLoginVerify({
+    context,
+    Parimater,
+  }) async {
     ShowGlopalLoading();
 
-    await userapi()
-        .UserLoginVerify( context: context,Parimater:Parimater)
-        .then((value) {
-      hideSpinner();
+    try {
+      final value = await userapi().UserLoginVerify(
+        context: context,
+        Parimater: Parimater,
+      );
 
-      if(value.id!=null){
-
+      if (value.id != null) {
         userinfo = value;
-
       }
 
-    }).then((value) => hideSpinner());
+      print('✅ UserLoginVerify completed');
+      print('User ID: ${value.id}');
+    } catch (e, stackTrace) {
+      print('❌ UserLoginVerify error: $e');
+      print('StackTrace: $stackTrace');
+    } finally {
+      hideSpinner();
+    }
+
     notifyListeners();
   }
   userinformation({ context}) async {

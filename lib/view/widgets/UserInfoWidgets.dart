@@ -1,16 +1,13 @@
 import 'package:ahlachat/view/widgets/LevelWidget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:country_calling_code_picker_plus/country_calling_code_picker_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
 import '../../models/Usermodel.dart';
 import '../../util/Dialogs.dart';
 import '../../util/Localization.dart';
 import '../../util/helperclass.dart';
 import '../../util/images.dart';
 import '../../util/styles.dart';
-import '../../viewmodels/Room_Viewmodel/Room_Viewmodel.dart';
 
 class UserInfoWidgets extends StatelessWidget {
 
@@ -19,16 +16,22 @@ class UserInfoWidgets extends StatelessWidget {
   UserInfoWidgets({this.UserDate,this.TextColor=Colors.black,});
   @override
   Widget build(BuildContext context) {
-    RoomViewmodel Room=  Provider.of<RoomViewmodel>(context,listen: true);
 
     return Column(crossAxisAlignment: CrossAxisAlignment.center,children: [
       Row(mainAxisSize: MainAxisSize.min,
         children: [
-      if(UserDate?.Flag!=null)    Image.asset(
-            UserDate?.Flag??'',
-            package: countryCodePackageName,
-            width: 25,
-          ),
+          if (UserDate?.Flag != null)
+            Image.asset(
+              UserDate!.Flag!,
+              width: 25,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.flag,
+                  size: 25,
+                  color: Colors.grey,
+                );
+              },
+            ),
            SizedBox(width: 10,),
            Row(
              children: [
