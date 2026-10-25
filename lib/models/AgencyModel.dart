@@ -1,5 +1,6 @@
 import 'package:ahlachat/models/Usermodel.dart';
 import '../util/app_constants.dart';
+import '../util/fixed_image_url.dart';
 
 class Agencymodel {
   int? id;
@@ -55,13 +56,9 @@ class Agencymodel {
     coins = _toInt(json['coins']);
     agencyKind = _toInt(json['AgencyKind']);
 
-    model = json['model'] == null
-        ? null
-        : '${AppConstants.Image_URL}${json['model']}';
+    model = fixImageUrl(json['model']) ?? '';
 
-    image = json['image'] == null
-        ? null
-        : '${AppConstants.Image_URL}${json['image']}';
+    image = fixImageUrl(json['image']) ?? '';
 
     userNumber = _toInt(json['user_number']);
     ban = _toInt(json['ban']);

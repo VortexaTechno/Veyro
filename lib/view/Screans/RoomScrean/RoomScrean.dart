@@ -138,7 +138,11 @@ class _RoomScreanState extends State<RoomScrean> with TickerProviderStateMixin, 
                       ],
                     ),
                   ),
-                  const ChatWidgets()
+                  const SafeArea(
+                    top: false,
+                    bottom: true,
+                    child: ChatWidgets(),
+                  ),
                 ],
               ),
             ),

@@ -26,6 +26,10 @@ class AgoraViewmodel extends ChangeNotifier {
   bool Rebeate = false;
 
   RtcEngine? _engine;
+  bool _initializing = false;
+  bool _handlersRegistered = false;
+  bool _disposed = false;
+  String? _joinedChannel;
 
   List usersuid = [];
 
@@ -70,6 +74,12 @@ class AgoraViewmodel extends ChangeNotifier {
     required String Token,
     required String channelName,
   }) async {
+    if (_initializing || _disposed) {
+      debugPrint('[AGORA] Initialization already running or disposed');
+      return;
+    }
+
+    _initializing = true;
     try {
       print('');
       print('========================================');
@@ -111,26 +121,15 @@ class AgoraViewmodel extends ChangeNotifier {
       // If old engine exists, leave it before creating a new one
       // --------------------------------------------------------
 
-      if (_engine != null) {
-        try {
-          print('♻️ Existing Agora engine found');
+      // Reuse the existing engine instead of destroying it
+// every time the user enters a room.
+      if (_engine != null && _joinedChannel != null) {
+        debugPrint('[AGORA] Leaving previous channel');
 
-          await _engine!.leaveChannel();
+        await _engine!.leaveChannel();
+        _joinedChannel = null;
 
-          print('✅ Previous Agora channel left');
-        } catch (e) {
-          print('⚠️ Error leaving previous channel: $e');
-        }
-
-        try {
-          await _engine!.release();
-
-          print('✅ Previous Agora engine released');
-        } catch (e) {
-          print('⚠️ Error releasing previous Agora engine: $e');
-        }
-
-        _engine = null;
+        debugPrint('[AGORA] Previous channel left');
       }
 
       // --------------------------------------------------------
@@ -140,15 +139,12 @@ class AgoraViewmodel extends ChangeNotifier {
       await _initAgoraRtcEngine(
         role: role,
       );
-
+      if (!_handlersRegistered) {
+        _addAgoraEventHandlers();
+        _handlersRegistered = true;
+      }
       // --------------------------------------------------------
       // Register events
-      // --------------------------------------------------------
-
-      _addAgoraEventHandlers();
-
-      // --------------------------------------------------------
-      // Determine role
       // --------------------------------------------------------
 
       final ClientRoleType currentRole =
@@ -221,7 +217,7 @@ class AgoraViewmodel extends ChangeNotifier {
         uid: uid,
         options: options,
       );
-
+      _joinedChannel = channelName;
       print('✅ AGORA JOIN REQUEST SENT');
       print('========================================');
       print('');
@@ -239,6 +235,9 @@ class AgoraViewmodel extends ChangeNotifier {
       // Don't rethrow here because this method is called from
       // room navigation and we don't want to crash the app.
     }
+    finally {
+      _initializing = false;
+    }
   }
 
   // ============================================================
@@ -250,7 +249,10 @@ class AgoraViewmodel extends ChangeNotifier {
   }) async {
     try {
       print('🔧 Creating Agora engine...');
-
+      if (_engine != null) {
+        debugPrint('[AGORA] Reusing existing engine');
+        return;
+      }
       _engine = createAgoraRtcEngine();
 
       await _engine!.initialize(
@@ -343,25 +345,28 @@ class AgoraViewmodel extends ChangeNotifier {
   // ============================================================
 
   Future<void> EndAgora() async {
-    try {
-      print('🛑 END AGORA');
+    final engine = _engine;
 
-      muted = true;
+    muted = true;
 
-      usersuid.clear();
-      userjoin.clear();
-      speakerids.clear();
-      UserIDS.clear();
+    usersuid.clear();
+    userjoin.clear();
+    speakerids.clear();
+    UserIDS.clear();
 
-      if (_engine != null) {
-        await _engine!.leaveChannel();
-
-        print('✅ Agora channel left');
+    if (engine != null && _joinedChannel != null) {
+      try {
+        await engine.leaveChannel();
+        debugPrint('[AGORA] Channel left successfully');
+      } catch (e) {
+        debugPrint('[AGORA] leaveChannel error: $e');
+      } finally {
+        _joinedChannel = null;
       }
+    }
 
+    if (!_disposed) {
       notifyListeners();
-    } catch (e) {
-      print('❌ EndAgora ERROR: $e');
     }
   }
 
@@ -1071,6 +1076,7 @@ class AgoraViewmodel extends ChangeNotifier {
             int totalVolume,
             int totalRemoteVolume,
             ) {
+          DateTime _lastVolumeUiUpdate = DateTime.fromMillisecondsSinceEpoch(0);
           for (final speaker in volumeInfo) {
             final int volume =
                 speaker.volume ?? 0;
@@ -1105,8 +1111,12 @@ class AgoraViewmodel extends ChangeNotifier {
               speakerids.remove(item);
             }
           }
+          final now = DateTime.now();
 
-          notifyListeners();
+          if (now.difference(_lastVolumeUiUpdate).inMilliseconds >= 500) {
+            _lastVolumeUiUpdate = now;
+            notifyListeners();
+          }
         },
       ),
     );
@@ -1120,16 +1130,31 @@ class AgoraViewmodel extends ChangeNotifier {
 
   @override
   void dispose() {
-    try {
-      _engine?.leaveChannel();
+    _disposed = true;
+    unawaited(_releaseAgoraEngine());
+    super.dispose();
+  }
 
-      _engine?.release();
+  Future<void> _releaseAgoraEngine() async {
+    final engine = _engine;
+
+    // Prevent any further use of this engine.
+    _engine = null;
+    _joinedChannel = null;
+
+    if (engine == null) return;
+
+    try {
+      await engine.leaveChannel();
     } catch (e) {
-      print('❌ Agora dispose ERROR: $e');
+      debugPrint('[AGORA] leaveChannel during dispose: $e');
     }
 
-    _engine = null;
-
-    super.dispose();
+    try {
+      await engine.release();
+      debugPrint('[AGORA] Engine released');
+    } catch (e) {
+      debugPrint('[AGORA] release during dispose: $e');
+    }
   }
 }

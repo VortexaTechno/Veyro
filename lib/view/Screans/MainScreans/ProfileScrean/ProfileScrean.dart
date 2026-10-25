@@ -35,418 +35,679 @@ import 'package:ahlachat/view/Screans/MainScreans/ProfileScrean/Widgets/Usership
 import 'package:ahlachat/viewmodels/Auth_Viewmodel/LoginViewModel.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-
-
 import 'package:provider/provider.dart';
 
 import '../../../../viewmodels/Room_Viewmodel/Room_Viewmodel.dart';
 
-class ProfileScrean extends StatelessWidget{
+class ProfileScrean extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: true);
-    VipViewmodel Vips=  Provider.of<VipViewmodel>(context,listen: true);
-    FamilyViewModel  Family=Provider.of<FamilyViewModel>(context,listen:  true);
-    ShopViewmodel Shop=  Provider.of<ShopViewmodel>(context,listen: true);
-    AagencyViewModel  Agency=Provider.of<AagencyViewModel>(context,listen:  false);
-    AgoraViewmodel Agora=Provider.of<AgoraViewmodel>(context,listen: false);
-    RoomViewmodel Room=  Provider.of<RoomViewmodel>(context,listen: true);
+    LoginViewmodel user = Provider.of<LoginViewmodel>(context, listen: true);
+    VipViewmodel Vips = Provider.of<VipViewmodel>(context, listen: true);
+    FamilyViewModel Family =
+        Provider.of<FamilyViewModel>(context, listen: true);
+    ShopViewmodel Shop = Provider.of<ShopViewmodel>(context, listen: true);
+    AagencyViewModel Agency =
+        Provider.of<AagencyViewModel>(context, listen: false);
+    AgoraViewmodel Agora = Provider.of<AgoraViewmodel>(context, listen: false);
+    RoomViewmodel Room = Provider.of<RoomViewmodel>(context, listen: true);
 
-    return Scaffold(backgroundColor: Colors.transparent,
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: CustomScrollView(
+          physics: BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Container(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                        image: ExactAssetImage(
+                            'assets/image/bg_profile_pt_view.png'),
+                        fit: BoxFit.fill)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            height: 2,
+                          ),
+                          IconButton(
+                            icon: Image.asset(Images.Setting,
+                                height: 25, color: Colors.white),
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                  context, AppConstants.Edit_Profile);
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      InkWell(
+                        onTap: () {
+                          user.GetShoweduserProfile(user.userinfo);
+                          navigateTo(
+                              context: context, screen: ShowUserProfile());
+                        },
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                                radius: 25,
+                                backgroundImage: CachedNetworkImageProvider(
+                                    user.userinfo?.image ??
+                                        Images.profilephoto)),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            ProfileSideInfoWidgets(
+                                UserDate: user.userinfo,
+                                TextColor: Colors.white),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.white.withOpacity(0.5),
+                              size: 35,
+                            )
+                          ],
+                        ),
+                      ),
+                      Padding(padding: EdgeInsets.symmetric(vertical: 10)),
+                      FollwoingRowWidget(),
+                      Padding(padding: EdgeInsets.symmetric(vertical: 10)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+                child: InkWell(
+              onTap: () {
+                Navigator.pushNamed(context, AppConstants.Recharge_Screan);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  height: 80,
+                  child: Center(
+                      child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(Images.coins, height: 20),
+                      SizedBox(width: 10),
+                      Text(
+                        user.userinfo?.coins.toString() ?? '',
+                        style: TextStyle(color: Colors.white, fontSize: 25),
+                      ),
+                    ],
+                  )),
+                  width: SizeConfig.screenWidth,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: DecorationImage(
+                          image: ExactAssetImage(
+                              'assets/image/first_charge_banner_02.png'),
+                          fit: BoxFit.fill)),
+                ),
+              ),
+            )),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Agency.GetAgencyLeaderBoard();
+                        navigateTo(
+                            context: context,
+                            screen: AgencyLeaderBoardScrean());
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                    'assets/image/ic_me_entry_noblecenter.png',
+                                    height: 30),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "Agencies", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Vips.GetVips(context: context);
+                        Navigator.pushNamed(context, AppConstants.Vip_Screan);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                    'assets/image/ic_me_entry_vipcenter.png',
+                                    height: 30),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "Vip_Center", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        user.UserGifts(context: context);
+                        Navigator.pushNamed(context, AppConstants.User_Gifts);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                    'assets/image/ic_me_entry_giftercenter.png',
+                                    height: 30),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "gifts", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Shop.GetBag(context: context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                    'assets/image/ic_me_entry_backpack.png',
+                                    height: 30),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "Bag", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Shop.GetShop(context: context);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                    'assets/image/ic_me_entry_store.png',
+                                    height: 30),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "Shop", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        navigateTo(context: context, screen: LevelScrean());
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                    'assets/image/ic_me_entry_userlevel.png',
+                                    height: 30),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "Level", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (user.userinfo?.agency != null)
+                      InkWell(
+                        onTap: () {
+                          Agency.GetAgencyinfo(
+                              context: context, info: user.userinfo?.agency);
+                          navigateTo(
+                              context: context, screen: MyAgencyScrean());
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CachedNetworkImage(
+                                      imageUrl:
+                                          user.userinfo?.agency?.image ?? '',
+                                      height: 30,
+                                      width: 30),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    user.userinfo?.agency?.name ?? '',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        height: 2),
+                                  )
+                                ],
+                              ),
+                              Spacer(),
+                              Icon(
+                                Icons.navigate_next,
+                                color: Colors.grey.withOpacity(0.5),
+                                size: 30,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (user.userinfo?.MyFamil != null)
+                      InkWell(
+                        onTap: () {
+                          Family.GetFamily(Val: user.userinfo?.MyFamil);
+                          navigateTo(
+                              context: context, screen: FamilyProfileScrean());
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                      Family.Levels.where((element) =>
+                                              element['Coins'] <=
+                                              user.userinfo?.MyFamil?.karisma)
+                                          .last['image'],
+                                      height: 30),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    getLang(key: "Family", context: context),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        height: 2),
+                                  )
+                                ],
+                              ),
+                              Spacer(),
+                              Icon(
+                                Icons.navigate_next,
+                                color: Colors.grey.withOpacity(0.5),
+                                size: 30,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (user.userinfo?.AgencyId != null)
+                      InkWell(
+                        onTap: () {
+                          user.GetTargetTime(context: context);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(Images.Modif, height: 30),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    getLang(key: "modif", context: context),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        height: 2),
+                                  )
+                                ],
+                              ),
+                              Spacer(),
+                              Icon(
+                                Icons.navigate_next,
+                                color: Colors.grey.withOpacity(0.5),
+                                size: 30,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (user.userinfo?.MyFamil == null)
+                      SizedBox(
+                        height: 8,
+                      ),
+                    if (user.userinfo?.agency == null)
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, AppConstants.Exchange_Screan);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(Images.jwile, height: 30),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    getLang(context: context, key: "Exchange"),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 15,
+                                        height: 2),
+                                  )
+                                ],
+                              ),
+                              const Spacer(),
+                              Icon(
+                                Icons.navigate_next,
+                                color: Colors.grey.withOpacity(0.5),
+                                size: 30,
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        navigateTo(context: context, screen: ContactUs());
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(Images.profileReport, height: 28),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(context: context, key: "Report"),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        navigateTo(context: context, screen: LanguageScrean());
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(Images.profilelanguage, height: 28),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "Language", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            const Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Dialogs().showdialog(
+                            context: context,
+                            tittle: 'tittle',
+                            content:
+                                getLang(context: context, key: "Sure_Logout"),
+                            buttontext: getLang(context: context, key: "Yes"),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Agora.EndAgora();
+                              if (Room.Currentroom != null) {
+                                Provider.of<RoomPlayViewModel>(context,
+                                        listen: false)
+                                    .changeHasRoomstate(false);
+                                Provider.of<RoomPlayViewModel>(context,
+                                        listen: false)
+                                    .changeIsRoomstate(false);
+                                JoinChairs = false;
+                                Provider.of<SocketViewmodel>(context,
+                                        listen: false)
+                                    .DisConnect(
+                                        id: Room.Currentroom?.id.toString());
+                                Provider.of<AgoraViewmodel>(context,
+                                        listen: false)
+                                    .disableAudioroomvoice();
+                                Provider.of<AgoraViewmodel>(context,
+                                        listen: false)
+                                    .stopAudioMexing(context);
+                                Room.Currentroom = null;
+                              }
 
-     body: CustomScrollView(  physics: BouncingScrollPhysics(),
-       slivers: [
-         SliverToBoxAdapter(
-           child: Container(
-             decoration: BoxDecoration(image: DecorationImage(image: ExactAssetImage('assets/image/bg_profile_pt_view.png'),fit: BoxFit.fill)),
-             child: Padding(
-               padding: const EdgeInsets.all(8.0),
-               child: Column(
-                 children: [
-                   SizedBox(height: 30,),
-                   Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children: [
-                     SizedBox(height: 2,),
-
-                     IconButton(
-                       icon: Image.asset(Images.Setting,height: 25,color: Colors.white),
-                       onPressed: (){
-
-
-                           Navigator.pushNamed(context, AppConstants.Edit_Profile);
-
-                       },
-                     ),
-
-                   ],
-
-                   ),
-                   SizedBox(height: 15,),
-                   InkWell(onTap:() {
-                     user.GetShoweduserProfile(user.userinfo);
-                     navigateTo(context: context, screen: ShowUserProfile());
-                   } ,
-                     child: Row(crossAxisAlignment: CrossAxisAlignment.center,
-                       mainAxisAlignment: MainAxisAlignment.center,
-                       children: [
-
-                        CircleAvatar(radius: 25,backgroundColor: whitecolor,backgroundImage: CachedNetworkImageProvider(user.userinfo?.image??Images.profilephoto)),
-                         SizedBox(width: 10,),
-                         ProfileSideInfoWidgets(UserDate: user.userinfo,TextColor: Colors.white),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.white.withOpacity(0.5),size: 35,)
-
-
-
-                       ],
-
-                     ),
-                   ),
-                   Padding(padding: EdgeInsets.symmetric(vertical: 10)),
-                   FollwoingRowWidget(),
-                   Padding(padding: EdgeInsets.symmetric(vertical: 10)),
-                 ],
-               ),
-             ),
-           ),
-         ),
-
-
-
-
-         SliverToBoxAdapter(
-             child:InkWell(
-               onTap: (){
-                 Navigator.pushNamed(context,AppConstants.Recharge_Screan);
-               },
-               child: Padding(
-                 padding: const EdgeInsets.all(8.0),
-                 child: Container(height:80 ,child: Center(child: Row(
-                   crossAxisAlignment: CrossAxisAlignment.center,
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     Image.asset(Images.coins,height: 20),
-                     SizedBox(width: 10),
-                     Text(user.userinfo?.coins.toString()??'',style: TextStyle(color: Colors.white,fontSize: 25),),
-                   ],
-                 )),width: SizeConfig.screenWidth, decoration: BoxDecoration( borderRadius: BorderRadius.circular(10),image: DecorationImage(image: ExactAssetImage('assets/image/first_charge_banner_02.png'),fit: BoxFit.fill)),),
-               ),
-             )
-         ),
-
-
-         SliverToBoxAdapter(
-           child: Padding(
-             padding: const EdgeInsets.all(8.0),
-             child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-               mainAxisAlignment: MainAxisAlignment.start,
-               children: [
-
-                 InkWell(
-                   onTap: (){
-                     Agency.GetAgencyLeaderBoard();
-                     navigateTo(context: context, screen: AgencyLeaderBoardScrean());
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset('assets/image/ic_me_entry_noblecenter.png',height: 30) ,
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "Agencies",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 InkWell(
-                   onTap: (){
-                     Vips.GetVips(context: context);
-                     Navigator.pushNamed(context,AppConstants.Vip_Screan);
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset('assets/image/ic_me_entry_vipcenter.png',height: 30) ,
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "Vip_Center",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 InkWell(
-                   onTap: (){
-                     user.UserGifts(context: context);
-                     Navigator.pushNamed(context, AppConstants.User_Gifts);
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset('assets/image/ic_me_entry_giftercenter.png',height: 30) ,
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "gifts",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 InkWell(
-                   onTap: (){
-                     Shop.GetBag( context: context);
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset('assets/image/ic_me_entry_backpack.png',height: 30) ,
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "Bag",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 InkWell(
-                   onTap: (){
-                     Shop.GetShop(context: context);
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset('assets/image/ic_me_entry_store.png',height: 30) ,
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "Shop",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 InkWell(
-                   onTap: (){
-                     navigateTo(context: context, screen: LevelScrean());
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset('assets/image/ic_me_entry_userlevel.png',height: 30) ,
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "Level",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 if(user.userinfo?.agency!=null)       InkWell(
-                   onTap: (){
-
-                   Agency.GetAgencyinfo(context: context,info:user.userinfo?.agency);
-                   navigateTo(context: context, screen: MyAgencyScrean());
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                            CachedNetworkImage(imageUrl:  user.userinfo?.agency?.image??'',height: 30,width: 30) ,
-                             SizedBox(width: 10,),
-                             Text(user.userinfo?.agency?.name??'',style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-        if(user.userinfo?.MyFamil!=null)       InkWell(
-          onTap: (){
-              Family.GetFamily(Val: user.userinfo?.MyFamil);
-              navigateTo(context: context,screen: FamilyProfileScrean());
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5),
-            child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                             mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset(Family.Levels.where((element) => element['Coins']<=user.userinfo?.MyFamil?.karisma).last['image'],height: 30) ,
-
-                           SizedBox(width: 10,),
-
-                           Text(getLang(key: "Family",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                         ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-          ),
-        ),
-                 if(user.userinfo?.AgencyId!=null)  InkWell(
-                   onTap: (){
-
-                     user.GetTargetTime(context: context);
-
-                   },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset(Images.Modif,height: 30) ,
-
-                             SizedBox(width: 10,),
-
-                             Text(getLang(key: "modif",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 if(user.userinfo?.MyFamil==null)     SizedBox(height: 8,),
-                 if(user.userinfo?.agency==null)
-                   InkWell(onTap: () {
-                     Navigator.pushNamed(context,AppConstants.Exchange_Screan);
-                   },
-                     child: Padding(
-                       padding: const EdgeInsets.symmetric(vertical: 5),
-                       child: Row(
-                         children: [
-                           Row(crossAxisAlignment: CrossAxisAlignment.center,
-                             mainAxisAlignment: MainAxisAlignment.center,children: [
-                               Image.asset(Images.jwile,height:30),
-                               SizedBox(width: 10,),
-                               Text(getLang(context: context,key: "Exchange"),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                             ],),
-                           const Spacer(),
-                           Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                         ],
-                       ),
-                     ),
-                   ),
-                 SizedBox(height:8,),
-                 InkWell(onTap: () {
-                   navigateTo(context: context, screen: ContactUs());
-                 },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset(Images.profileReport,height:28),
-                             SizedBox(width: 10,),
-
-                             Text(getLang(context: context,key: "Report"),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-
-                 SizedBox(height: 8,),
-                 InkWell(onTap: () {
-                   navigateTo(context: context, screen: LanguageScrean());
-                 },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-                             Image.asset(Images.profilelanguage,height:28),
-                             SizedBox(width: 10,),
-                             Text(getLang(key: "Language",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         const Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 ),
-                 SizedBox(height: 8,),
-                 InkWell(onTap: () {
-                   Dialogs().showdialog(context: context, tittle: 'tittle', content: getLang(context: context, key: "Sure_Logout"), buttontext: getLang(context: context, key: "Yes"), onTap: (){
-                     Navigator.pop(context);
-                    Agora.EndAgora();
-                     if(Room.Currentroom!=null){
-
-                       Provider.of<RoomPlayViewModel>(context, listen: false).changeHasRoomstate(false);
-                       Provider.of<RoomPlayViewModel>(context, listen: false).changeIsRoomstate(false);
-                       JoinChairs=false;
-                       Provider.of<SocketViewmodel>(context,listen: false).DisConnect(id: Room.Currentroom?.id.toString());
-                       Provider.of<AgoraViewmodel>(context,listen: false).disableAudioroomvoice();
-                       Provider.of<AgoraViewmodel>(context,listen: false).stopAudioMexing(context);
-                       Room.Currentroom=null;
-                     }
-
-                     user.Signout(context: context);
-                   });
-                 },
-                   child: Padding(
-                     padding: const EdgeInsets.symmetric(vertical: 5),
-                     child: Row(
-                       children: [
-                         Row(crossAxisAlignment: CrossAxisAlignment.center,
-                           mainAxisAlignment: MainAxisAlignment.center,children: [
-
-                             FaIcon(FontAwesomeIcons.signOut,color: MainColor,size: 20),
-                             SizedBox(width: 10,),
-
-                             Text(getLang(key: "LogOut",context: context),style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15,height: 2),)
-                           ],),
-                         Spacer(),
-                         Icon(Icons.navigate_next,color: Colors.grey.withOpacity(0.5),size: 30,)
-                       ],
-                     ),
-                   ),
-                 )
-
-               ],
-             ),
-           ),
-         )
-       ],
-     )
-    );
+                              user.Signout(context: context);
+                            });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                FaIcon(FontAwesomeIcons.signOut,
+                                    color: MainColor, size: 20),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text(
+                                  getLang(key: "LogOut", context: context),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15,
+                                      height: 2),
+                                )
+                              ],
+                            ),
+                            Spacer(),
+                            Icon(
+                              Icons.navigate_next,
+                              color: Colors.grey.withOpacity(0.5),
+                              size: 30,
+                            )
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            )
+          ],
+        ));
   }
 }
-

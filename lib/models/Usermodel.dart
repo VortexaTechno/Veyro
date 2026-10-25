@@ -14,6 +14,8 @@ import 'package:ahlachat/models/UserModels.dart';
 import 'package:ahlachat/models/gifts.dart';
 import 'package:ahlachat/util/app_constants.dart';
 
+import '../util/fixed_image_url.dart';
+
 class usermodel {
   int? id;
   String? image='';
@@ -172,7 +174,7 @@ class usermodel {
 
   usermodel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    image = AppConstants.Image_URL+json['image'];
+    image = fixImageUrl(json['image']) ?? '';
     phoneNumber = json['phone_number'].toString();
     entry=json['entry']==null?'':AppConstants.Image_URL+json['entry'];
     name = json['name'];
@@ -394,6 +396,4 @@ class usermodel {
     }
     return data;
   }
-
-
 }

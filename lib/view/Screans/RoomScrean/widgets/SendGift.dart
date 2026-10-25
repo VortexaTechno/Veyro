@@ -164,98 +164,103 @@ if(user.Giftcatigoris[index]['gifts'][indexx]['luckypackage']==1){
                       )
                       ),
                     ),
-                    Container(width: SizeConfig.screenWidth!,
-                      decoration: BoxDecoration( color: Colors.transparent ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 2 ),
-                        child: Row( children: [
-                          Directionality(
-                            textDirection: TextDirection.rtl,
-                            child: Row(mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                InkWell(onTap: (){
 
-                                  if(gits.GiftList.isEmpty){
-                                    Dialogs().showtoast(getLang(context: context,key: "NoGiftSelected"));
+                    SafeArea(
+                      top: false,
+                      bottom: true,
+                      child: Container(width: SizeConfig.screenWidth!,
+                        decoration: BoxDecoration( color: Colors.transparent ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 2 ),
+                          child: Row( children: [
+                            Directionality(
+                              textDirection: TextDirection.rtl,
+                              child: Row(mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  InkWell(onTap: (){
 
-                                  }else if(Room.UserIds.isEmpty){
-                                    Dialogs().showtoast(getLang(context: context,key: "NouserSelected"));
+                                    if(gits.GiftList.isEmpty){
+                                      Dialogs().showtoast(getLang(context: context,key: "NoGiftSelected"));
 
-                                  }else{
-                                    if((user.userinfo?.coins??0) < gits.Cost){
-                                      navigateTo(context: context, screen: RechargeScrean());
-                                      Dialogs().showtoast(getLang(context: context,key: "Not_Enough"));
+                                    }else if(Room.UserIds.isEmpty){
+                                      Dialogs().showtoast(getLang(context: context,key: "NouserSelected"));
 
                                     }else{
-
-
-print(gits.GiftKind.toString());
-                                      if(gits.GiftKind==1){
-
-                                        Room.SentLuckyGift(Cost:gits.Cost ,Listuser: Room.UserIds,context: context,giftid: gits.GiftList.first['id'],quantity:gits.SentValue.toString());
+                                      if((user.userinfo?.coins??0) < gits.Cost){
+                                        navigateTo(context: context, screen: RechargeScrean());
+                                        Dialogs().showtoast(getLang(context: context,key: "Not_Enough"));
 
                                       }else{
-                                        Room.SentGift(Cost:gits.Cost ,Listuser: Room.UserIds,context: context,giftid: gits.GiftList.first['id'],quantity:gits.SentValue.toString());
 
-                                      } Navigator.pop(context);
+
+                      print(gits.GiftKind.toString());
+                                        if(gits.GiftKind==1){
+
+                                          Room.SentLuckyGift(Cost:gits.Cost ,Listuser: Room.UserIds,context: context,giftid: gits.GiftList.first['id'],quantity:gits.SentValue.toString());
+
+                                        }else{
+                                          Room.SentGift(Cost:gits.Cost ,Listuser: Room.UserIds,context: context,giftid: gits.GiftList.first['id'],quantity:gits.SentValue.toString());
+
+                                        } Navigator.pop(context);
+
+                                      }
 
                                     }
+                                  },child: Container(width: 60,height: 35, decoration: BoxDecoration( color: MainColor,borderRadius: BorderRadius.only(bottomRight:       Radius.circular(10),topRight: Radius.circular(10) )),
+                                      child: Center(child: Text(getLang(context: context,key: "Send") ,style: style1.copyWith(height: 1,color: Colors.white,fontSize: 13) )))),
+                                  Container(width: 60,height: 35,
+                                      decoration: BoxDecoration( color:MainColor,  borderRadius: BorderRadius.only(topLeft:   Radius.circular(10),bottomLeft: Radius.circular(10) )),
 
-                                  }
-                                },child: Container(width: 60,height: 35, decoration: BoxDecoration( color: MainColor,borderRadius: BorderRadius.only(bottomRight:       Radius.circular(10),topRight: Radius.circular(10) )),
-                                    child: Center(child: Text(getLang(context: context,key: "Send") ,style: style1.copyWith(height: 1,color: Colors.white,fontSize: 13) )))),
-                                Container(width: 60,height: 35,
-                                    decoration: BoxDecoration( color:MainColor,  borderRadius: BorderRadius.only(topLeft:   Radius.circular(10),bottomLeft: Radius.circular(10) )),
+                                    child: PopupMenuButton(
+                                      offset: Offset(0, 0),
+                                      onSelected: (s){
 
-                                  child: PopupMenuButton(
-                                    offset: Offset(0, 0),
-                                    onSelected: (s){
-
-                                      gits.changeSentValue(s.toString());
+                                        gits.changeSentValue(s.toString());
 
 
-                                      gits.Cost=gits.giftprice*int.parse(s.toString())*Room.UserIds.length  ;
+                                        gits.Cost=gits.giftprice*int.parse(s.toString())*Room.UserIds.length  ;
 
 
-                                    },child: Container( width: 50, color: Colors.transparent,child: Center(child: Text(gits.SentValue.toString(),style: style1.copyWith(height: 1,color: Colors.white),))),
-                                    onCanceled: (){
-                                      print('d');
-                                    },
-                                    itemBuilder: (_) => <PopupMenuEntry>[
-                                      PopupMenuItem(value:'1',
-                                          child:Text( '1',style: style6,)),
-                                      PopupMenuItem(value:'5' ,
-                                          child:Text('5',style: style6,)),
-                                      PopupMenuItem(value:'10',
-                                          child:Text('10',style: style6,)),
-                                      PopupMenuItem(value:'20',child:Text('20',style: style6,)),
-                                    ],
+                                      },child: Container( width: 50, color: Colors.transparent,child: Center(child: Text(gits.SentValue.toString(),style: style1.copyWith(height: 1,color: Colors.white),))),
+                                      onCanceled: (){
+                                        print('d');
+                                      },
+                                      itemBuilder: (_) => <PopupMenuEntry>[
+                                        PopupMenuItem(value:'1',
+                                            child:Text( '1',style: style6,)),
+                                        PopupMenuItem(value:'5' ,
+                                            child:Text('5',style: style6,)),
+                                        PopupMenuItem(value:'10',
+                                            child:Text('10',style: style6,)),
+                                        PopupMenuItem(value:'20',child:Text('20',style: style6,)),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                          Column(mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-
-                              Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5),
-                                    child: Text(user.userinfo?.coins.toString()??'0',style: style6.copyWith(height: 1,color: Colors.black,fontSize: 15)),
-                                  ),
-                                  Image.asset(Images.coins,width: 15,height: 15),
                                 ],
                               ),
+                            ),
+                            const Spacer(),
+                            Column(mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
 
-                            ],
-                          ),
-                          const         SizedBox(width: 10,)
-                        ]),
-                      ),),
+                                Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                                      child: Text(user.userinfo?.coins.toString()??'0',style: style6.copyWith(height: 1,color: Colors.black,fontSize: 15)),
+                                    ),
+                                    Image.asset(Images.coins,width: 15,height: 15),
+                                  ],
+                                ),
+
+                              ],
+                            ),
+                            const         SizedBox(width: 10,)
+                          ]),
+                        ),),
+                    ),
 
                   ],
                 ),

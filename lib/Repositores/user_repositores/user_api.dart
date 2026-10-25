@@ -1622,36 +1622,62 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
 
     return userinfo;
   }
-  Future<usermodel> UserProfileData({id, context}) async {
 
+  Future<usermodel> UserProfileData({id, context}) async {
     try {
+      print('========== USER PROFILE DATA ==========');
+      print('REQUEST: GET');
+      print('URL: ${dio.options.baseUrl}/api/UserProfileData/$id/$UserId');
 
       Response response2 = await dio.get(
         '/api/UserProfileData/$id/$UserId',
       );
-       
+
+      print('STATUS CODE: ${response2.statusCode}');
+      print('RESPONSE DATA: ${response2.data}');
 
       if (response2.statusCode == 200) {
+        print('SUCCESS: User profile fetched successfully');
 
         userinfo = usermodel.fromJson(response2.data['users']);
-
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-         
-        Dialogs().ShowErrorToast(e.response!.data['errNum'],context);
-
       } else {
-        print(e);
-
-
+        print('FAILED: Unexpected status code');
       }
+
+    } on DioException catch (e) {
+      print('========== DIO ERROR ==========');
+      print('REQUEST URL: ${e.requestOptions.uri}');
+      print('REQUEST METHOD: ${e.requestOptions.method}');
+      print('STATUS CODE: ${e.response?.statusCode}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('RESPONSE DATA: ${e.response?.data}');
+      print('ERROR TYPE: ${e.type}');
+
+      final data = e.response?.data;
+
+      if (context != null && context.mounted) {
+        final errNum = data is Map
+            ? data['errNum']?.toString() ??
+            data['message']?.toString() ??
+            e.message ??
+            'حدث خطأ غير معروف'
+            : e.message ?? 'حدث خطأ غير معروف';
+
+        Dialogs().ShowErrorToast(errNum, context);
+      }
+
+    } catch (e, stackTrace) {
+      print('========== UNEXPECTED ERROR ==========');
+      print('ERROR: $e');
+      print('STACK TRACE: $stackTrace');
     }
-    print(userinfo);
+
+    print('FINAL USER INFO: $userinfo');
+    print('======================================');
 
     return userinfo;
   }
+
 
 
   Future<usermodel> Userinfo({ context}) async {
