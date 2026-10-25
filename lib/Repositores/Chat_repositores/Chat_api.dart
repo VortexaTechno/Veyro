@@ -1,5 +1,8 @@
 
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../models/Inboxroom.dart';
 import '../../models/MessageModel.dart';
@@ -7,8 +10,8 @@ import '../../util/Dialogs.dart';
 import '../../util/app_constants.dart';
 import '../Moment_repositores/Moment_repository.dart';
 
+int Index = 2;
 
-int Index=2;
 class Chatapi extends MomentRepository {
   @override
   var dio = Dio(
@@ -17,195 +20,384 @@ class Chatapi extends MomentRepository {
       headers: {
         'Accept': 'application/json',
         'Connection': 'Keep-Alive',
-        'Authorization':Token,
-        'awqeASERQW':'8/325*mAIOEN',
-        'userid':UserId.toString(),
-        'UserIP':UserIP,
+        'Authorization': Token,
+        'awqeASERQW': '8/325*mAIOEN',
+        'userid': UserId.toString(),
+        'UserIP': UserIP,
       },
     ),
   );
-  List<InboxRoomModel> InboxRooms=[];
 
-  Future<List<InboxRoomModel> >  GetInboxRooms(context)async {
+  final List<InboxRoomModel> InboxRooms = [];
 
-    try {
-      Response response2 = await dio.get(
-        '/api/GetMyInboxRoom/$UserId',
-      );
+  Message messages = Message();
 
-      if (response2.statusCode == 200) {
-        List list =response2.data;
+  // =====================================================
+  // LOGGING HELPERS
+  // =====================================================
 
-        list.forEach((element) {
-          InboxRooms.add(InboxRoomModel.fromJson(element));
-        });
+  void _logRequest(
+      String method,
+      String endpoint, {
+        dynamic data,
+      }) {
+    debugPrint('\n');
+    debugPrint('╔══════════════════════════════════════════════');
+    debugPrint('🚀 API REQUEST');
+    debugPrint('➡️ METHOD: $method');
+    debugPrint('➡️ BASE URL: ${dio.options.baseUrl}');
+    debugPrint('➡️ ENDPOINT: $endpoint');
+    debugPrint('➡️ USER ID: $UserId');
 
-      }
-    } catch (e) {
-      print(e);
-      
+    if (data != null) {
+      debugPrint('📤 REQUEST DATA: ${_describeData(data)}');
     }
 
+    // Authorization token is intentionally not printed.
+    debugPrint('╚══════════════════════════════════════════════');
+  }
+
+  String _describeData(dynamic data) {
+    if (data is FormData) {
+      return '''
+Fields: ${data.fields}
+Files: ${data.files.map((entry) {
+        final file = entry.value;
+        return {
+          'field': entry.key,
+          'filename': file.filename,
+          'contentType': file.contentType?.toString(),
+        };
+      }).toList()}
+''';
+    }
+
+    return data.toString();
+  }
+
+  void _logResponse(Response response) {
+    debugPrint('\n');
+    debugPrint('╔══════════════════════════════════════════════');
+    debugPrint('✅ API RESPONSE');
+    debugPrint('➡️ URL: ${response.realUri}');
+    debugPrint('➡️ STATUS CODE: ${response.statusCode}');
+    debugPrint('➡️ STATUS MESSAGE: ${response.statusMessage}');
+    debugPrint('📥 RESPONSE BODY:');
+    debugPrint('${response.data}', wrapWidth: 1024);
+    debugPrint('╚══════════════════════════════════════════════');
+    debugPrint('\n');
+  }
+
+  void _logDioError(DioException error) {
+    debugPrint('\n');
+    debugPrint('╔══════════════════════════════════════════════');
+    debugPrint('❌ DIO API ERROR');
+    debugPrint('➡️ URL: ${error.requestOptions.uri}');
+    debugPrint('➡️ METHOD: ${error.requestOptions.method}');
+    debugPrint('➡️ ERROR TYPE: ${error.type}');
+    debugPrint('➡️ MESSAGE: ${error.message}');
+    debugPrint('➡️ STATUS CODE: ${error.response?.statusCode}');
+    debugPrint('➡️ STATUS MESSAGE: ${error.response?.statusMessage}');
+    debugPrint('📥 ERROR RESPONSE BODY:');
+    debugPrint(
+      '${error.response?.data ?? 'No response body'}',
+      wrapWidth: 1024,
+    );
+    debugPrint('➡️ ORIGINAL ERROR: ${error.error}');
+    debugPrint('╚══════════════════════════════════════════════');
+    debugPrint('\n');
+  }
+
+  void _logUnknownError(String operation, Object error, StackTrace stack) {
+    debugPrint('\n');
+    debugPrint('╔══════════════════════════════════════════════');
+    debugPrint('❌ UNEXPECTED ERROR: $operation');
+    debugPrint('➡️ ERROR: $error');
+    debugPrint('➡️ STACK TRACE: $stack');
+    debugPrint('╚══════════════════════════════════════════════');
+    debugPrint('\n');
+  }
+
+  // =====================================================
+  // GET INBOX ROOMS
+  // =====================================================
+
+  Future<List<InboxRoomModel>> GetInboxRooms(context) async {
+    final endpoint = '/api/GetMyInboxRoom/$UserId';
+
+    InboxRooms.clear();
+
+    _logRequest('GET', endpoint);
+
+    try {
+      final Response response = await dio.get(endpoint);
+
+      _logResponse(response);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data is List) {
+          for (final element in data) {
+            InboxRooms.add(InboxRoomModel.fromJson(element));
+          }
+        } else {
+          debugPrint(
+            '⚠️ GetInboxRooms expected a List but received: '
+                '${data.runtimeType}',
+          );
+        }
+      }
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('GetInboxRooms', error, stack);
+    }
+
+    debugPrint('📦 Parsed inbox rooms: ${InboxRooms.length}');
     return InboxRooms;
-
   }
 
+  // =====================================================
+  // SEND IMAGE CHAT
+  // =====================================================
 
-  Future<Message> SentImageChat({ context,image, userid  }) async {
-print(userid);print(UserId);
-    var send=true;
+  Future<Message> SentImageChat({
+    context,
+    image,
+    userid,
+  }) async {
+    const endpoint = 'api/sendImage';
+
     try {
-      FormData formData =   FormData.fromMap({
-        "message":await MultipartFile.fromFile(image?.path, filename: image?.path?.split('/')?.last),
-        "user_id":userid.toString(),
-        "sender_id":UserId.toString()
+      if (image == null || image.path == null) {
+        debugPrint('❌ SentImageChat: image is null');
+        return Message();
+      }
+
+      final String filename =
+          image.path.split(Platform.pathSeparator).last;
+
+      final FormData formData = FormData.fromMap({
+        'message': await MultipartFile.fromFile(
+          image.path,
+          filename: filename,
+        ),
+        'user_id': userid.toString(),
+        'sender_id': UserId.toString(),
       });
 
-      Response response2 = await dio.post(
-        'api/sendImage',
+      _logRequest('POST', endpoint, data: formData);
+
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
-      if (response2.statusCode == 200) {
+      _logResponse(response);
 
-        messages=Message.fromJson(response2.data['Messages']);
-         
+      if (response.statusCode == 200) {
+        final body = response.data;
+
+        if (body is Map && body['Messages'] != null) {
+          final result = Message.fromJson(body['Messages']);
+          messages = result;
+          return result;
+        }
+
+        debugPrint('⚠️ SentImageChat: response has no "Messages" key');
       }
-    } catch (e) {
-      print(e);
-
-
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('SentImageChat', error, stack);
     }
 
-    return messages;
+    return Message();
   }
-  Future<bool>  deleteInboxRooms({context, inboxid})async {
-bool deleted=false;
+
+  // =====================================================
+  // DELETE INBOX ROOM
+  // =====================================================
+
+  Future<bool> deleteInboxRooms({
+    context,
+    inboxid,
+  }) async {
+    final endpoint = '/api/deleteInboxRoom/$inboxid';
+
+    _logRequest('GET', endpoint);
+
     try {
-      Response response2 = await dio.get(
-        '/api/deleteInboxRoom/${inboxid}',
-      );
+      final Response response = await dio.get(endpoint);
 
-      if (response2.statusCode == 200) {
-        deleted=true;
-      }else{
-        deleted=false;
-      }
-    } catch (e) {
+      _logResponse(response);
 
-      print(e);
+      return response.statusCode == 200;
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('deleteInboxRooms', error, stack);
     }
 
-    return deleted;
-
+    return false;
   }
-  Future<bool>  deleteandBlockInboxRooms({context, inboxid})async {
-    bool deleted=false;
+
+  // =====================================================
+  // DELETE AND BLOCK USER
+  // =====================================================
+
+  Future<bool> deleteandBlockInboxRooms({
+    context,
+    inboxid,
+  }) async {
+    final endpoint =
+        '/api/deleteInboxRoomandBlockUser/$inboxid/$UserId';
+
+    _logRequest('GET', endpoint);
+
     try {
-      Response response2 = await dio.get(
-        '/api/deleteInboxRoomandBlockUser/$inboxid/$UserId',
-      );
+      final Response response = await dio.get(endpoint);
 
-      if (response2.statusCode == 200) {
-        deleted=true;
-      }else{
-        deleted=false;
-      }
-    } catch (e) {
-      print(e);
+      _logResponse(response);
 
+      return response.statusCode == 200;
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('deleteandBlockInboxRooms', error, stack);
     }
 
-    return deleted;
-
+    return false;
   }
-  Future<bool> ReadInboxRoom({ context,InboxRoom}) async {
 
-    bool read=false;
+  // =====================================================
+  // READ INBOX ROOM
+  // =====================================================
+
+  Future<bool> ReadInboxRoom({
+    context,
+    InboxRoom,
+  }) async {
+    const endpoint = 'api/ReadInboxRoom';
+
+    final FormData formData = FormData.fromMap({
+      'inboxroomid': InboxRoom.toString(),
+    });
+
+    _logRequest('POST', endpoint, data: formData);
+
     try {
-      FormData formData = new FormData.fromMap({
-        "inboxroomid": InboxRoom.toString(),
-
-      });
-      Response response2 = await dio.post(
-        'api/ReadInboxRoom',
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
-      if (response2.statusCode == 200) {
+      _logResponse(response);
 
-        read=true;
-      }else{
-        read=false;
-      }
-    } catch (e) {
-      read=false;
-      print(e);
+      return response.statusCode == 200;
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('ReadInboxRoom', error, stack);
     }
 
-    return read;
+    return false;
   }
 
-  Message messages=Message();
+  // =====================================================
+  // SEND TEXT MESSAGE
+  // =====================================================
 
-  Future<Message> SendMessage({ context,message,Senderid,userid}) async {
+  Future<Message> SendMessage({
+    context,
+    message,
+    Senderid,
+    userid,
+  }) async {
+    const endpoint = 'api/sendmessage';
 
+    final FormData formData = FormData.fromMap({
+      'message': message.toString(),
+      'user_id': userid.toString(),
+      'sender_id': Senderid.toString(),
+    });
+
+    _logRequest('POST', endpoint, data: formData);
 
     try {
-      FormData formData = FormData.fromMap({
-        "message": message.toString(),
-        "user_id":userid.toString(),
-        "sender_id":Senderid.toString()
-
-      });
-      Response response2 = await dio.post(
-        'api/sendmessage',
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
+      _logResponse(response);
 
-      if (response2.statusCode == 200) {
+      if (response.statusCode == 200) {
+        final body = response.data;
 
-        messages=Message.fromJson(response2.data['Messages']);
+        if (body is Map && body['Messages'] != null) {
+          final result = Message.fromJson(body['Messages']);
+          messages = result;
+          return result;
+        }
 
-       }
-    } catch (e) {
-
-      print(e);
+        debugPrint('⚠️ SendMessage: response has no "Messages" key');
+      }
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('SendMessage', error, stack);
     }
 
-    return messages;
+    return Message();
   }
 
-  Future<Message> SendGiftMessage({ context,giftid,Senderid,userid}) async {
+  // =====================================================
+  // SEND GIFT MESSAGE
+  // =====================================================
 
+  Future<Message> SendGiftMessage({
+    context,
+    giftid,
+    Senderid,
+    userid,
+  }) async {
+    const endpoint = 'api/sendgiftmessage';
 
+    final FormData formData = FormData.fromMap({
+      'gift_id': giftid.toString(),
+      'user_id': userid.toString(),
+      'sender_id': Senderid.toString(),
+    });
 
+    _logRequest('POST', endpoint, data: formData);
 
     try {
-      FormData formData = FormData.fromMap({
-        "gift_id": giftid.toString(),
-        "user_id":userid.toString(),
-        "sender_id":Senderid.toString()
-
-      });
-      Response response2 = await dio.post(
-        'api/sendgiftmessage',
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
+      _logResponse(response);
 
-      if (response2.statusCode == 200) {
+      if (response.statusCode == 200) {
+        final body = response.data;
 
-        messages=Message.fromJson(response2.data['Messages']);
+        if (body is Map && body['Messages'] != null) {
+          final result = Message.fromJson(body['Messages']);
+          messages = result;
+          return result;
+        }
 
+        debugPrint('⚠️ SendGiftMessage: response has no "Messages" key');
       }
-    } catch (e) {
-
-
+    } on DioException catch (error) {
+      _logDioError(error);
+    } catch (error, stack) {
+      _logUnknownError('SendGiftMessage', error, stack);
     }
 
-    return messages;
+    return Message();
   }
-
 }

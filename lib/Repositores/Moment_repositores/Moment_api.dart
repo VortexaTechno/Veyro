@@ -1,7 +1,6 @@
 
 import 'package:ahlachat/Repositores/Moment_repositores/Moment_repository.dart';
 import 'package:dio/dio.dart';
-
 import 'package:provider/provider.dart';
 
 import '../../models/CommentsModel.dart';
@@ -11,9 +10,10 @@ import '../../util/Dialogs.dart';
 import '../../util/app_constants.dart';
 import '../../viewmodels/Moment_Viewmodel/Moment_ViewModel.dart';
 
-int Index=2;
-int PostIndex=2;
-int FollowIndex=2;
+int Index = 2;
+int PostIndex = 2;
+int FollowIndex = 2;
+
 class Momentapi extends MomentRepository {
   @override
   var dio = Dio(
@@ -22,476 +22,820 @@ class Momentapi extends MomentRepository {
       headers: {
         'Accept': 'application/json',
         'Connection': 'Keep-Alive',
-        'Authorization':Token,
-        'awqeASERQW':'8/325*mAIOEN',
-        'userid':UserId.toString(),
-        'UserIP':UserIP,
+        'Authorization': Token,
+        'awqeASERQW': '8/325*mAIOEN',
+        'userid': UserId.toString(),
+        'UserIP': UserIP,
       },
     ),
   );
-List<Postes> GeneralPostes=[];
-  List<Postes>   GetMyPostslist=[];
-  Future<List<Postes>>  GetPosts(context)async {
-    PostIndex=2 ;
-    try {
-      Response response2 = await dio.get(
-        '/api/GetPosts/${UserId}',
-      );
 
-      if (response2.statusCode == 200) {
-         List list =response2.data['Postes']['date']['data'];
-         List ste=response2.data['Postes']['posts'];
-         list.forEach((element) {
-          GeneralPostes.add(Postes.fromJson(element));
-        });
-        Provider.of<MomentViewModel>(context,listen: false).GetLikedPost(ste);
-      }
-    } catch (e) {
+  List<Postes> GeneralPostes = [];
+  List<Postes> GetMyPostslist = [];
 
-      
+  Comments Commentss = Comments();
+  Like Likes = Like();
+  Postes post = Postes();
+
+  // =========================================================
+  // LOGGING HELPERS
+  // =========================================================
+
+  void _logRequest(
+      String apiName,
+      String method,
+      String endpoint, {
+        dynamic data,
+      }) {
+    print('\n========== $apiName REQUEST ==========');
+    print('URL: ${dio.options.baseUrl}$endpoint');
+    print('METHOD: $method');
+    print('USER ID: $UserId');
+
+    if (data != null) {
+      print('REQUEST DATA: $data');
     }
 
-    return GeneralPostes;
-
+    print('======================================');
   }
-  Future<List<Postes>>  GetFollowPostes(context)async {
-    FollowIndex=2 ;
-    try {
-      Response response2 = await dio.get(
-        '/api/GetPostsUserFollowing/${UserId}',
-      );
 
-      if (response2.statusCode == 200) {
+  void _logResponse(String apiName, Response response) {
+    print('\n========== $apiName RESPONSE ==========');
+    print('URL: ${response.requestOptions.uri}');
+    print('METHOD: ${response.requestOptions.method}');
+    print('STATUS CODE: ${response.statusCode}');
+    print('RESPONSE HEADERS: ${response.headers}');
+    print('RESPONSE BODY: ${response.data}');
+    print('=======================================\n');
+  }
 
-        List ste=response2.data['Postes']['data'];
-        ste.forEach((element) {
-          GeneralPostes.add(Postes.fromJson(element));
-        });
+  void _logDioError(String apiName, DioException error) {
+    print('\n========== $apiName DIO ERROR ==========');
+    print('URL: ${error.requestOptions.uri}');
+    print('METHOD: ${error.requestOptions.method}');
+    print('STATUS CODE: ${error.response?.statusCode}');
+    print('RESPONSE BODY: ${error.response?.data}');
+    print('ERROR TYPE: ${error.type}');
+    print('ERROR MESSAGE: ${error.message}');
+    print('========================================\n');
+  }
 
-      }
-    } catch (e) {
+  void _logUnknownError(
+      String apiName,
+      Object error,
+      StackTrace stackTrace,
+      ) {
+    print('\n========== $apiName UNKNOWN ERROR ==========');
+    print('ERROR: $error');
+    print('STACK TRACE: $stackTrace');
+    print('============================================\n');
+  }
 
+  void _showApiError(dynamic context, dynamic data) {
+    if (context == null || data is! Map) return;
 
+    final errNum = data['errNum'];
+
+    if (errNum != null) {
+      Dialogs().ShowErrorRegesterToast(errNum, context);
     }
-
-    return GeneralPostes;
-
   }
 
-  Future<List<Postes>>  AddmoreFollowPosts(context)async {
+  void _handleDioError(
+      String apiName,
+      DioException error, {
+        dynamic context,
+        bool showToast = false,
+      }) {
+    _logDioError(apiName, error);
+
+    if (showToast) {
+      _showApiError(context, error.response?.data);
+    }
+  }
+
+  // =========================================================
+  // GET POSTS
+  // =========================================================
+
+  Future<List<Postes>> GetPosts(context) async {
+    PostIndex = 2;
 
     try {
-      Response response2 = await dio.get(
-        '/api/GetPostsUserFollowing/${UserId}?page=${FollowIndex.toString()}',
-      );
+      final endpoint = '/api/GetPosts/$UserId';
 
-      if (response2.statusCode == 200) {
+      _logRequest('GET POSTS', 'GET', endpoint);
 
-        List list =response2.data['Postes']['data'] ;
-        if(list.isNotEmpty){
-          FollowIndex++;
+      final Response response = await dio.get(endpoint);
+
+      _logResponse('GET POSTS', response);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data is Map &&
+            data['Postes'] is Map &&
+            data['Postes']['date'] is Map &&
+            data['Postes']['date']['data'] is List) {
+          final List list = data['Postes']['date']['data'];
+          final List ste = data['Postes']['posts'] is List
+              ? data['Postes']['posts']
+              : [];
+
+          for (final element in list) {
+            GeneralPostes.add(Postes.fromJson(element));
+          }
+
+          Provider.of<MomentViewModel>(
+            context,
+            listen: false,
+          ).GetLikedPost(ste);
+        } else {
+          print('GET POSTS: Unexpected response format.');
         }
-
-        list.forEach((element){
-          GeneralPostes.add(Postes.fromJson(element));
-        });
-
       }
-    } catch (e) {
-      print(e);
-
+    } on DioException catch (e) {
+      _handleDioError('GET POSTS', e, context: context, showToast: true);
+    } catch (e, stackTrace) {
+      _logUnknownError('GET POSTS', e, stackTrace);
     }
 
     return GeneralPostes;
-
   }
-  Future<List<Postes>>  AddmorePosts(context)async {
+
+  // =========================================================
+  // GET FOLLOWING POSTS
+  // =========================================================
+
+  Future<List<Postes>> GetFollowPostes(context) async {
+    FollowIndex = 2;
 
     try {
-      Response response2 = await dio.get(
-        '/api/GetPosts/${UserId}?page=${PostIndex.toString()}',
+      final endpoint = '/api/GetPostsUserFollowing/$UserId';
+
+      _logRequest('GET FOLLOW POSTS', 'GET', endpoint);
+
+      final Response response = await dio.get(endpoint);
+
+      _logResponse('GET FOLLOW POSTS', response);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data is Map &&
+            data['Postes'] is Map &&
+            data['Postes']['data'] is List) {
+          final List list = data['Postes']['data'];
+
+          for (final element in list) {
+            GeneralPostes.add(Postes.fromJson(element));
+          }
+        } else {
+          print('GET FOLLOW POSTS: Unexpected response format.');
+        }
+      }
+    } on DioException catch (e) {
+      _handleDioError(
+        'GET FOLLOW POSTS',
+        e,
+        context: context,
+        showToast: true,
       );
-
-      if (response2.statusCode == 200) {
-
-        List list =response2.data['Postes']['date']['data'];
-        if(list.isNotEmpty){
-          PostIndex++;
-        }
-        print("INDEX IS $Index");
-        list.forEach((element){
-          GeneralPostes.add(Postes.fromJson(element));
-        });
-        print(GeneralPostes);
-      }
-    } catch (e) {
-      print(e);
-      if (e is DioError) {
-
-        Dialogs().ShowErrorToast(e.response!.data['errNum'],context);
-        if (e.response!.data['errNum'] == '3500') {
-
-        }
-      } else {
-        print(e);
-      }
+    } catch (e, stackTrace) {
+      _logUnknownError('GET FOLLOW POSTS', e, stackTrace);
     }
 
     return GeneralPostes;
-
   }
 
-  Future<bool> ReportPost({ context, Postid}) async {
-    bool status=false;
+  // =========================================================
+  // LOAD MORE FOLLOWING POSTS
+  // =========================================================
+
+  Future<List<Postes>> AddmoreFollowPosts(context) async {
+    final endpoint =
+        '/api/GetPostsUserFollowing/$UserId?page=$FollowIndex';
+
     try {
-      FormData formData = new FormData.fromMap({
-        "user_id": UserId.toString(),
-        "post_id": Postid.toString(),
-        "reason":'Post',
+      _logRequest('LOAD MORE FOLLOW POSTS', 'GET', endpoint);
+
+      final Response response = await dio.get(endpoint);
+
+      _logResponse('LOAD MORE FOLLOW POSTS', response);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data is Map &&
+            data['Postes'] is Map &&
+            data['Postes']['data'] is List) {
+          final List list = data['Postes']['data'];
+
+          if (list.isNotEmpty) {
+            FollowIndex++;
+          }
+
+          for (final element in list) {
+            GeneralPostes.add(Postes.fromJson(element));
+          }
+
+          print('FOLLOW INDEX: $FollowIndex');
+          print('LOADED POSTS: ${list.length}');
+        } else {
+          print('LOAD MORE FOLLOW POSTS: Unexpected response format.');
+        }
+      }
+    } on DioException catch (e) {
+      _handleDioError(
+        'LOAD MORE FOLLOW POSTS',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('LOAD MORE FOLLOW POSTS', e, stackTrace);
+    }
+
+    return GeneralPostes;
+  }
+
+  // =========================================================
+  // LOAD MORE POSTS
+  // =========================================================
+
+  Future<List<Postes>> AddmorePosts(context) async {
+    final endpoint = '/api/GetPosts/$UserId?page=$PostIndex';
+
+    try {
+      _logRequest('LOAD MORE POSTS', 'GET', endpoint);
+
+      final Response response = await dio.get(endpoint);
+
+      _logResponse('LOAD MORE POSTS', response);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data is Map &&
+            data['Postes'] is Map &&
+            data['Postes']['date'] is Map &&
+            data['Postes']['date']['data'] is List) {
+          final List list = data['Postes']['date']['data'];
+
+          if (list.isNotEmpty) {
+            PostIndex++;
+          }
+
+          print('INDEX: $Index');
+          print('POST INDEX: $PostIndex');
+          print('NEW POSTS COUNT: ${list.length}');
+
+          for (final element in list) {
+            GeneralPostes.add(Postes.fromJson(element));
+          }
+
+          print('TOTAL POSTS: ${GeneralPostes.length}');
+        } else {
+          print('LOAD MORE POSTS: Unexpected response format.');
+        }
+      }
+    } on DioException catch (e) {
+      _handleDioError(
+        'LOAD MORE POSTS',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('LOAD MORE POSTS', e, stackTrace);
+    }
+
+    return GeneralPostes;
+  }
+
+  // =========================================================
+  // REPORT POST
+  // =========================================================
+
+  Future<bool> ReportPost({context, Postid}) async {
+    bool status = false;
+    const endpoint = 'api/AddPostReport';
+
+    try {
+      final formData = FormData.fromMap({
+        'user_id': UserId.toString(),
+        'post_id': Postid.toString(),
+        'reason': 'Post',
       });
-      Response response2 = await dio.post(
-        'api/AddPostReport',
+
+      _logRequest(
+        'REPORT POST',
+        'POST',
+        endpoint,
+        data: {
+          'user_id': UserId.toString(),
+          'post_id': Postid.toString(),
+          'reason': 'Post',
+        },
+      );
+
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
+      _logResponse('REPORT POST', response);
 
-      if (response2.statusCode == 200) {
-        status=true;
-      }else{
-        status=false;
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
-      } else {
-        print(e);
-      }
+      status = response.statusCode == 200;
+    } on DioException catch (e) {
+      _handleDioError(
+        'REPORT POST',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('REPORT POST', e, stackTrace);
     }
 
     return status;
   }
 
-  Future<bool> ReportUser({ context, Userid}) async {
-    bool status=false;
-    try {
-      FormData formData = new FormData.fromMap({
-        "sender_id": UserId.toString(),
-        "user_id": Userid.toString(),
+  // =========================================================
+  // REPORT USER
+  // =========================================================
 
+  Future<bool> ReportUser({context, Userid}) async {
+    bool status = false;
+    const endpoint = 'api/AddUserReport';
+
+    try {
+      final formData = FormData.fromMap({
+        'sender_id': UserId.toString(),
+        'user_id': Userid.toString(),
       });
-      Response response2 = await dio.post(
-        'api/AddUserReport',
+
+      _logRequest(
+        'REPORT USER',
+        'POST',
+        endpoint,
+        data: {
+          'sender_id': UserId.toString(),
+          'user_id': Userid.toString(),
+        },
+      );
+
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
+      _logResponse('REPORT USER', response);
 
-      if (response2.statusCode == 200) {
-        status=true;
-      }else{
-        status=false;
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
-      } else {
-        print(e);
-      }
+      status = response.statusCode == 200;
+    } on DioException catch (e) {
+      _handleDioError(
+        'REPORT USER',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('REPORT USER', e, stackTrace);
     }
 
     return status;
   }
 
-  Future<bool> BlockUser({ context, Userid}) async {
-    bool status=false;
-    try {
-      FormData formData = new FormData.fromMap({
-        "sender_id": UserId.toString(),
-        "user_id": Userid.toString(),
+  // =========================================================
+  // BLOCK USER
+  // =========================================================
 
+  Future<bool> BlockUser({context, Userid}) async {
+    bool status = false;
+    const endpoint = 'api/AddBlockList';
+
+    try {
+      final formData = FormData.fromMap({
+        'sender_id': UserId.toString(),
+        'user_id': Userid.toString(),
       });
-      Response response2 = await dio.post(
-        'api/AddBlockList',
+
+      _logRequest(
+        'BLOCK USER',
+        'POST',
+        endpoint,
+        data: {
+          'sender_id': UserId.toString(),
+          'user_id': Userid.toString(),
+        },
+      );
+
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
+      _logResponse('BLOCK USER', response);
 
-      if (response2.statusCode == 200) {
-
-        status=true;
-      }else{
-        status=false;
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
-      } else {
-        print(e);
-      }
-    }
-
-    return status;
-  }
-  Future<bool> UnBlockUser({ context, Userid}) async {
-    bool status=false;
-    try {
-      FormData formData = new FormData.fromMap({
-        "sender_id": UserId.toString(),
-        "user_id": Userid.toString(),
-
-      });
-      Response response2 = await dio.post(
-        'api/UnBlockUser',
-        data: formData,
+      status = response.statusCode == 200;
+    } on DioException catch (e) {
+      _handleDioError(
+        'BLOCK USER',
+        e,
+        context: context,
+        showToast: true,
       );
-
-
-      if (response2.statusCode == 200) {
-
-        status=true;
-      }else{
-        status=false;
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
-      } else {
-        print(e);
-      }
+    } catch (e, stackTrace) {
+      _logUnknownError('BLOCK USER', e, stackTrace);
     }
 
     return status;
   }
 
-  Future<List<Postes> >  GetMyPosts(context)async {
+  // =========================================================
+  // UNBLOCK USER
+  // =========================================================
+
+  Future<bool> UnBlockUser({context, Userid}) async {
+    bool status = false;
+    const endpoint = 'api/UnBlockUser';
 
     try {
-      Response response2 = await dio.get(
-        '/api/GetMyPosts/${UserId}',
+      final formData = FormData.fromMap({
+        'sender_id': UserId.toString(),
+        'user_id': Userid.toString(),
+      });
+
+      _logRequest(
+        'UNBLOCK USER',
+        'POST',
+        endpoint,
+        data: {
+          'sender_id': UserId.toString(),
+          'user_id': Userid.toString(),
+        },
       );
 
-      if (response2.statusCode == 200) {
+      final Response response = await dio.post(
+        endpoint,
+        data: formData,
+      );
 
-        List list =response2.data['Postes'];
+      _logResponse('UNBLOCK USER', response);
 
+      status = response.statusCode == 200;
+    } on DioException catch (e) {
+      _handleDioError(
+        'UNBLOCK USER',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('UNBLOCK USER', e, stackTrace);
+    }
 
-        list.forEach((element) {
-          GetMyPostslist.add(Postes.fromJson(element));
-        });
+    return status;
+  }
 
+  // =========================================================
+  // GET MY POSTS
+  // =========================================================
 
- 
+  Future<List<Postes>> GetMyPosts(context) async {
+    final endpoint = '/api/GetMyPosts/$UserId';
+
+    try {
+      _logRequest('GET MY POSTS', 'GET', endpoint);
+
+      final Response response = await dio.get(endpoint);
+
+      _logResponse('GET MY POSTS', response);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data is Map && data['Postes'] is List) {
+          final List list = data['Postes'];
+
+          for (final element in list) {
+            GetMyPostslist.add(Postes.fromJson(element));
+          }
+        } else {
+          print('GET MY POSTS: Unexpected response format.');
+        }
       }
-    } catch (e) {
-      print(e);
-      
+    } on DioException catch (e) {
+      _handleDioError(
+        'GET MY POSTS',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('GET MY POSTS', e, stackTrace);
     }
 
     return GetMyPostslist;
-
   }
 
-  Future<bool >  DeletePost({context,postid})async {
-bool deleted=false;
-    try {
-      Response response2 = await dio.get(
-        '/api/Deletemypost/${postid}',
-      );
+  // =========================================================
+  // DELETE POST
+  // =========================================================
 
-      if (response2.statusCode == 200) {
-        deleted=true;
-      }else{
-        deleted=false;
-      }
-    } catch (e) {
-      deleted=false;
-      print(e);
-      
+  Future<bool> DeletePost({context, postid}) async {
+    bool deleted = false;
+    final endpoint = '/api/Deletemypost/$postid';
+
+    try {
+      _logRequest('DELETE POST', 'GET', endpoint);
+
+      final Response response = await dio.get(endpoint);
+
+      _logResponse('DELETE POST', response);
+
+      deleted = response.statusCode == 200;
+    } on DioException catch (e) {
+      _handleDioError(
+        'DELETE POST',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('DELETE POST', e, stackTrace);
     }
 
     return deleted;
-
   }
-  Comments  Commentss=Comments();
-  Future<Comments> AddComment({ context,Comment,Postid}) async {
+
+  // =========================================================
+  // ADD COMMENT
+  // =========================================================
+
+  Future<Comments> AddComment({
+    context,
+    Comment,
+    Postid,
+  }) async {
+    const endpoint = 'api/AddComment';
+
     try {
-      FormData formData = new FormData.fromMap({
-        "user_id": UserId.toString(),
-        "post_id": Postid.toString(),
-        "Comment": Comment.toString(),
+      final formData = FormData.fromMap({
+        'user_id': UserId.toString(),
+        'post_id': Postid.toString(),
+        'Comment': Comment.toString(),
       });
-      Response response2 = await dio.post(
-        'api/AddComment',
-        data: formData,
+
+      _logRequest(
+        'ADD COMMENT',
+        'POST',
+        endpoint,
+        data: {
+          'user_id': UserId.toString(),
+          'post_id': Postid.toString(),
+          'Comment': Comment.toString(),
+        },
       );
-      print(response2.data['Comment']);
-      print('mssssartrrrrrrrr');
-      print(response2.data['Comment']);
-      if (response2.statusCode == 200) {
-         Commentss=Comments.fromJson(response2.data['Comment']);
 
-
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
-      } else {
-        print(e);
-      }
-    }
-
-    return Commentss;
-  }
-  Future<Comments> ReplayComment({ context,Commentid,Replay}) async {
-
-    try {
-      FormData formData = new FormData.fromMap({
-        "Comment_id": Commentid.toString(),
-        "Replay": Replay.toString(),
-      });
-      Response response2 = await dio.post(
-        'api/ReplayComment',
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
-      if (response2.statusCode == 200) {
- print('goooooooooooooooooooooooooooo');
+      _logResponse('ADD COMMENT', response);
 
- Commentss=Comments.fromJson(response2.data['Comment']);
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
+      if (response.statusCode == 200 &&
+          response.data is Map &&
+          response.data['Comment'] is Map) {
+        Commentss = Comments.fromJson(response.data['Comment']);
       } else {
-        print(e);
+        print('ADD COMMENT: Unexpected response format.');
       }
+    } on DioException catch (e) {
+      _handleDioError(
+        'ADD COMMENT',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('ADD COMMENT', e, stackTrace);
     }
 
     return Commentss;
   }
 
-  Like  Likes=Like();
-  Future<Like> LikePost({ Postid}) async {
-    try {
-      FormData formData = new FormData.fromMap({
-        "user_id": UserId.toString(),
-        "post_id": Postid.toString(),
+  // =========================================================
+  // REPLY TO COMMENT
+  // =========================================================
 
+  Future<Comments> ReplayComment({
+    context,
+    Commentid,
+    Replay,
+  }) async {
+    const endpoint = 'api/ReplayComment';
+
+    try {
+      final formData = FormData.fromMap({
+        'Comment_id': Commentid.toString(),
+        'Replay': Replay.toString(),
       });
-      Response response2 = await dio.post(
-        'api/AddLike',
+
+      _logRequest(
+        'REPLY COMMENT',
+        'POST',
+        endpoint,
+        data: {
+          'Comment_id': Commentid.toString(),
+          'Replay': Replay.toString(),
+        },
+      );
+
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
-      print(response2.data['Comment']);
-      print('mssssartrrrrrrrr');
-      print(response2.data['Like']);
-      if (response2.statusCode == 200) {
-        Likes=Like.fromJson(response2.data['Like']);
 
+      _logResponse('REPLY COMMENT', response);
 
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-
+      if (response.statusCode == 200 &&
+          response.data is Map &&
+          response.data['Comment'] is Map) {
+        Commentss = Comments.fromJson(response.data['Comment']);
       } else {
-        print(e);
+        print('REPLY COMMENT: Unexpected response format.');
       }
+    } on DioException catch (e) {
+      _handleDioError(
+        'REPLY COMMENT',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('REPLY COMMENT', e, stackTrace);
+    }
+
+    return Commentss;
+  }
+
+  // =========================================================
+  // LIKE POST
+  // =========================================================
+
+  Future<Like> LikePost({Postid}) async {
+    const endpoint = 'api/AddLike';
+
+    try {
+      final formData = FormData.fromMap({
+        'user_id': UserId.toString(),
+        'post_id': Postid.toString(),
+      });
+
+      _logRequest(
+        'LIKE POST',
+        'POST',
+        endpoint,
+        data: {
+          'user_id': UserId.toString(),
+          'post_id': Postid.toString(),
+        },
+      );
+
+      final Response response = await dio.post(
+        endpoint,
+        data: formData,
+      );
+
+      _logResponse('LIKE POST', response);
+
+      if (response.statusCode == 200 &&
+          response.data is Map &&
+          response.data['Like'] is Map) {
+        Likes = Like.fromJson(response.data['Like']);
+      } else {
+        print('LIKE POST: Unexpected response format.');
+      }
+    } on DioException catch (e) {
+      _handleDioError('LIKE POST', e);
+    } catch (e, stackTrace) {
+      _logUnknownError('LIKE POST', e, stackTrace);
     }
 
     return Likes;
   }
-  Postes post=Postes();
-  Future<bool> RemoveLike({ context,Postid}) async {
-    bool delete=false;
-    try {
-      FormData formData = new FormData.fromMap({
-        "user_id": UserId.toString(),
-        "post_id": Postid.toString(),
 
+  // =========================================================
+  // REMOVE LIKE
+  // =========================================================
+
+  Future<bool> RemoveLike({context, Postid}) async {
+    bool deleted = false;
+    const endpoint = 'api/RemoveLike';
+
+    try {
+      final formData = FormData.fromMap({
+        'user_id': UserId.toString(),
+        'post_id': Postid.toString(),
       });
-      Response response2 = await dio.post(
-        'api/RemoveLike',
+
+      _logRequest(
+        'REMOVE LIKE',
+        'POST',
+        endpoint,
+        data: {
+          'user_id': UserId.toString(),
+          'post_id': Postid.toString(),
+        },
+      );
+
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
 
-      print('mssssartrrrrrrrr');
-      print(response2.data['Like']);
-      if (response2.statusCode == 200) {
+      _logResponse('REMOVE LIKE', response);
 
-        delete=true;
-
-      }else{
-        delete=false;
-      }
-    } catch (e) {
-      delete=false;
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
-      } else {
-        print(e);
-      }
+      deleted = response.statusCode == 200;
+    } on DioException catch (e) {
+      _handleDioError(
+        'REMOVE LIKE',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('REMOVE LIKE', e, stackTrace);
     }
 
-    return delete;
+    return deleted;
   }
-  Future<Postes> AddPost({ context,tittle,image}) async {
+
+  // =========================================================
+  // ADD POST
+  // =========================================================
+
+  Future<Postes> AddPost({
+    context,
+    tittle,
+    image,
+  }) async {
+    const endpoint = 'api/AddPost';
 
     try {
-      var  map;
-      if(image==null){
-        map={
-          "user_id": UserId.toString(),
-          "content": tittle.toString(),
-        };
-      }else{
-        map={
-          "user_id": UserId.toString(),
-          "content": tittle.toString(),
-          "image":await MultipartFile.fromFile(image?.path, filename: image?.path?.split('/')?.last),
-         };
+      final Map<String, dynamic> map = {
+        'user_id': UserId.toString(),
+        'content': tittle.toString(),
+      };
+
+      if (image != null) {
+        map['image'] = await MultipartFile.fromFile(
+          image.path,
+          filename: image.path.split(RegExp(r'[/\\]')).last,
+        );
       }
 
-      map.removeWhere((key, value) => key == null || value == null);
-      FormData formData = new FormData.fromMap(map);
+      final FormData formData = FormData.fromMap(map);
 
+      _logRequest(
+        'ADD POST',
+        'POST',
+        endpoint,
+        data: {
+          'user_id': UserId.toString(),
+          'content': tittle.toString(),
+          'image': image?.path ?? 'No image',
+        },
+      );
 
-
-      Response response2 = await dio.post(
-        'api/AddPost',
+      final Response response = await dio.post(
+        endpoint,
         data: formData,
       );
-      print(response2.data['Comment']);
-    
-      if (response2.statusCode == 200) {
 
-        post=Postes.fromJson(response2.data['Postes']);
+      _logResponse('ADD POST', response);
 
-      }
-    } catch (e) {
-
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
+      if (response.statusCode == 200 &&
+          response.data is Map &&
+          response.data['Postes'] is Map) {
+        post = Postes.fromJson(response.data['Postes']);
       } else {
-        print(e);
+        print('ADD POST: Unexpected response format.');
       }
+    } on DioException catch (e) {
+      _handleDioError(
+        'ADD POST',
+        e,
+        context: context,
+        showToast: true,
+      );
+    } catch (e, stackTrace) {
+      _logUnknownError('ADD POST', e, stackTrace);
     }
 
     return post;
   }
-
 }

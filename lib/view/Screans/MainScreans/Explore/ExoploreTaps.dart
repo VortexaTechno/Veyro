@@ -88,7 +88,11 @@ print(_tabController.index);
     }
   });
 }
-
+@override
+void dispose() {
+  _tabController.dispose();
+  super.dispose();
+}
   @override
   Widget build(BuildContext context) {
     RoomViewmodel Room=  Provider.of<RoomViewmodel>(context,listen: true);
@@ -104,14 +108,16 @@ print(_tabController.index);
                 children: [
 
                   Expanded(
-                    child: TabBar(  indicator: MaterialIndicator(
-                      height: 5,
-                      topLeftRadius: 0,
-                      topRightRadius: 0,
-                      bottomLeftRadius: 5,horizontalPadding: 25,
-                      bottomRightRadius: 5,
-                      tabPosition: TabPosition.bottom,
-                    ),
+                    child: TabBar(
+                        indicator: MaterialIndicator(
+                          height: 5,
+                          topLeftRadius: 0,
+                          topRightRadius: 0,
+                          bottomLeftRadius: 5,
+                          bottomRightRadius: 5,
+                          horizontalPadding: 5, // كان 25
+                          tabPosition: TabPosition.bottom,
+                        ),
                         isScrollable: true,controller: _tabController,
                         labelStyle: style2,
                         unselectedLabelColor: Colors.black45,
@@ -161,7 +167,7 @@ print(_tabController.index);
       ),
         body:  Padding(
           padding: const EdgeInsets.only(top: 10),
-          child: TabBarView(controller: _tabController,children: [
+          child: TabBarView(controller: _tabController,children: const [
             RecommendedMoments(),
             FollowingMoments(),
           ],),

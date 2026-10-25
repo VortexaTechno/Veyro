@@ -97,15 +97,17 @@ class _MessageTapsState extends State<MessageTaps>with SingleTickerProviderState
                 children: [
 
                   Expanded(
-                    child: TabBar(  indicator: MaterialIndicator(
-                      height: 5,
-                      topLeftRadius: 0,
-                      topRightRadius: 0,
-                      bottomLeftRadius: 5,horizontalPadding: 25,
-                      bottomRightRadius: 5,
-                      tabPosition: TabPosition.bottom,
-                    ),
-                        isScrollable: true,controller: _tabController,
+                    child: TabBar(
+                        indicator: MaterialIndicator(
+                          height: 5,
+                          topLeftRadius: 0,
+                          topRightRadius: 0,
+                          bottomLeftRadius: 5,
+                          horizontalPadding: 5,
+                          bottomRightRadius: 5,
+                          tabPosition: TabPosition.bottom,
+                        ),
+                        isScrollable: false,controller: _tabController,
                         labelStyle: style2,
                         unselectedLabelColor: Colors.black45,
                         labelColor: Colors.black,
