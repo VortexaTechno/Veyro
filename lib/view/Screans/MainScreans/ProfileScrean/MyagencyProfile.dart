@@ -13,19 +13,23 @@ import 'package:ahlachat/viewmodels/Auth_Viewmodel/LoginViewModel.dart';
 import 'package:ahlachat/viewmodels/Room_Viewmodel/Room_Viewmodel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 class MyAgencyScrean extends StatefulWidget {
   @override
   State<MyAgencyScrean> createState() => _MyAgencyScreanState();
 }
+
 class _MyAgencyScreanState extends State<MyAgencyScrean> {
-
-
   ScrollController? _controller2;
-  void _scrollListener() {
-    AagencyViewModel  Agency=Provider.of<AagencyViewModel>(context,listen:  false);
-    if((_controller2?.offset??0) >= (_controller2?.position.maxScrollExtent??0)-20 && !Agency.showloading4){
 
+  void _scrollListener() {
+    AagencyViewModel Agency =
+        Provider.of<AagencyViewModel>(context, listen: false);
+    if ((_controller2?.offset ?? 0) >=
+            (_controller2?.position.maxScrollExtent ?? 0) - 20 &&
+        !Agency.showloading4) {
       Agency.GetMoreAgencymembers(context: context);
     }
   }
@@ -35,176 +39,422 @@ class _MyAgencyScreanState extends State<MyAgencyScrean> {
     _controller2?.addListener(_scrollListener);
     super.initState();
   }
-  String getTimeString(int value) {
 
+  String getTimeString(int value) {
     final int hour = (value / 60).floor();
-    final int minutes =  value - (hour * 60);
+    final int minutes = value - (hour * 60);
     return '${hour.toString().padLeft(2, "0")} ساعه ${minutes.toString().padLeft(2, "0")} دقيقه';
   }
+
   Widget build(BuildContext context) {
-    LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: true);
-    AagencyViewModel  Agency=Provider.of<AagencyViewModel>(context,listen:  true);
-    RoomViewmodel Rooms=  Provider.of<RoomViewmodel>(context,listen: true);
+    LoginViewmodel user = Provider.of<LoginViewmodel>(context, listen: true);
+    AagencyViewModel Agency =
+        Provider.of<AagencyViewModel>(context, listen: true);
+    RoomViewmodel Rooms = Provider.of<RoomViewmodel>(context, listen: true);
 
-    return Scaffold(   appBar: AppBar(actions: [
-      if(user.userinfo?.id==Agency.Agencyinfo?.userId) Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: InkWell(onTap: () {
-          Agency.EditAagencyName.text=Agency.Agencyinfo?.name??"";
+    return Scaffold(
+        appBar: AppBar(
+            actions: [
+              if (user.userinfo?.id == Agency.Agencyinfo?.userId)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: InkWell(
+                      onTap: () {
+                        Agency.EditAagencyName.text =
+                            Agency.Agencyinfo?.name ?? "";
 
-          showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                backgroundColor: Colors.white,
-                content: Column(mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('سوف يكلفك تغيير اسم الوكاله 5000 من الالماس الخاص بك',style: style2.copyWith(fontSize: 20),),
-                    SizedBox(height: 10,),
-                    TextFormField(controller: Agency.EditAagencyName,),
-                    SizedBox(height: 10,),
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        InkWell(onTap: (){
-                          if(Agency.EditAagencyName.text==Agency.Agencyinfo?.name){
-                            Dialogs().showtoast('لم تقم بتعديل اسم الوكاله بعد');
-                          }else{
-                            Navigator.pop(context);
-                            Agency.EditAagencyNames();
+                        showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                                  backgroundColor: Colors.white,
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'سوف يكلفك تغيير اسم الوكاله 5000 من الالماس الخاص بك',
+                                        style: style2.copyWith(fontSize: 20),
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      TextFormField(
+                                        controller: Agency.EditAagencyName,
+                                      ),
+                                      SizedBox(
+                                        height: 10,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          InkWell(
+                                              onTap: () {
+                                                if (Agency
+                                                        .EditAagencyName.text ==
+                                                    Agency.Agencyinfo?.name) {
+                                                  Dialogs().showtoast(
+                                                      'لم تقم بتعديل اسم الوكاله بعد');
+                                                } else {
+                                                  Navigator.pop(context);
+                                                  Agency.EditAagencyNames();
 
-                            // Navigator.pop(context);
-                          }
-
-
-
-                        },child: Container(decoration: BoxDecoration(color: MainColor,borderRadius: BorderRadius.circular(10)),child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
-                          child: Text('تعديل',style: style1.copyWith(fontSize: 15),),
-                        ))),
-                        InkWell(onTap: (){
-
-                          Navigator.pop(context);
-                        },child: Container(decoration: BoxDecoration(color: MainColor,borderRadius: BorderRadius.circular(10)),child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15),
-                          child: Text('اغلاق',style: style1.copyWith(fontSize: 15),),
-                        ))),
-                      ],
-                    ),
-
-                  ],
+                                                  // Navigator.pop(context);
+                                                }
+                                              },
+                                              child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: MainColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 5,
+                                                        horizontal: 15),
+                                                    child: Text(
+                                                      'تعديل',
+                                                      style: style1.copyWith(
+                                                          fontSize: 15),
+                                                    ),
+                                                  ))),
+                                          InkWell(
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color: MainColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 5,
+                                                        horizontal: 15),
+                                                    child: Text(
+                                                      'اغلاق',
+                                                      style: style1.copyWith(
+                                                          fontSize: 15),
+                                                    ),
+                                                  ))),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ));
+                      },
+                      child: Icon(Icons.settings)),
                 ),
-              )
-          );
-
-        },child: Icon(Icons.settings)),
-      ),
-
-     if(user.userinfo?.id==Agency.Agencyinfo?.userId) Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: InkWell(onTap: () {
-        Agency.GetJoinRequested(id: Agency.Agencyinfo?.id);
-        navigateTo(context: context, screen: JoinAgencyRequests());
-
-      },child: Icon(Icons.person_add_alt)),
-    ),
-
-    ]  ,iconTheme: IconThemeData(color: Colors.black),centerTitle: true,elevation: 0,title: Text(Agency.Agencyinfo?.name??"",style: style6.copyWith(fontSize: 19),)),
-
-        body:RefreshIndicator(color: MainColor, onRefresh: ()async{
-          Agency.GetJoinAgency(context: context);
-        },
-          child: Container( decoration: BoxDecoration(
-              gradient: LinearGradient(
+              if (user.userinfo?.id == Agency.Agencyinfo?.userId)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: InkWell(
+                      onTap: () {
+                        Agency.GetJoinRequested(id: Agency.Agencyinfo?.id);
+                        navigateTo(
+                            context: context, screen: JoinAgencyRequests());
+                      },
+                      child: Icon(Icons.person_add_alt)),
+                ),
+            ],
+            iconTheme: IconThemeData(color: Colors.black),
+            centerTitle: true,
+            elevation: 0,
+            title: Text(
+              Agency.Agencyinfo?.name ?? "",
+              style: style6.copyWith(fontSize: 19),
+            )),
+        body: RefreshIndicator(
+          color: MainColor,
+          onRefresh: () async {
+            Agency.GetJoinAgency(context: context);
+          },
+          child: Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
                   MainColor,
                   whitecolor,
                 ],
-              )
-          ),  width: SizeConfig.screenWidth,child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 20),
-            child: CustomScrollView(
-              slivers:   [
-                SliverToBoxAdapter(child: const SizedBox(height: 5,),),
-                SliverToBoxAdapter(child: Row(
-                  children: [
-
-                    Container(height: 70,width: 70,decoration: BoxDecoration(image: DecorationImage(image: CachedNetworkImageProvider(
-                        Agency.Agencyinfo?.image?? Images.relation ),fit: BoxFit.cover), ),
+              )),
+              width: SizeConfig.screenWidth,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: const SizedBox(
+                        height: 5,
+                      ),
                     ),
-                    const   SizedBox(width: 10,),
-                    Expanded(
+                    SliverToBoxAdapter(
                       child: Row(
                         children: [
-
-                          AgencySideInfo(AgencyDate:Agency.Agencyinfo ,showdescr: 0),
+                          Container(
+                            height: 70,
+                            width: 70,
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: CachedNetworkImageProvider(
+                                      Agency.Agencyinfo?.image ??
+                                          Images.relation),
+                                  fit: BoxFit.cover),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                AgencySideInfo(
+                                    AgencyDate: Agency.Agencyinfo,
+                                    showdescr: 0),
+                                Spacer(),
+                                if (Agency.Agencyinfo?.agencyKind == 0 ||
+                                    Agency.Agencyinfo?.agencyKind == 2)
+                                  if (user.userinfo?.agency == null &&
+                                      !(user.userinfo?.joinsrequested?.contains(
+                                              Agency.Agencyinfo?.id) ??
+                                          false))
+                                    InkWell(
+                                      onTap: () {
+                                        Dialogs().showdialog(
+                                          context: context,
+                                          tittle: getLang(
+                                              context: context,
+                                              key: "Join_Agency"),
+                                          content:
+                                              '${getLang(context: context, key: "Want_Join")} ${Agency.Agencyinfo?.name} ${getLang(context: context, key: "Agency")} ?',
+                                          buttontext: getLang(
+                                              context: context, key: "Yes"),
+                                          onTap: () async {
+                                            Navigator.pop(context);
+                                            Agency.RequsetJoinAgency(
+                                                context: context);
+                                          },
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            border:
+                                                Border.all(color: whitecolor),
+                                            color: MainColor,
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 5),
+                                          child: Text(
+                                            getLang(
+                                                context: context, key: "Join"),
+                                            style: style1,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                if (user.userinfo?.agency == null &&
+                                    (user.userinfo?.joinsrequested
+                                            ?.contains(Agency.Agencyinfo?.id) ??
+                                        false))
+                                  InkWell(
+                                    onTap: () {
+                                      Dialogs().showtoast(getLang(
+                                          context: context,
+                                          key: "Request_Agency"));
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          border: Border.all(color: whitecolor),
+                                          color: MainColor,
+                                          borderRadius:
+                                              BorderRadius.circular(20)),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 5),
+                                        child: Text(
+                                          getLang(
+                                              context: context,
+                                              key: "Requested"),
+                                          style: style1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 30,
+                      ),
+                    ),
+                    if (Agency.Agencyinfo?.agencyKind == 1)
+                      SliverToBoxAdapter(
+                        child: InkWell(
+                          onTap: () => showSellTargetDialog(context),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 25, vertical: 8),
+                                decoration: BoxDecoration(
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: const Text(
+                                  "بيع التارجت",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (Agency.Agencyinfo?.agencyKind == 1)
+                    const SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 30,
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: Row(
+                        children: [
+                          Text(
+                            "اعضاء الوكاله",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                height: 1,
+                                color: Colors.white),
+                          ),
                           Spacer(),
-                          if( Agency.Agencyinfo?.agencyKind==0||Agency.Agencyinfo?.agencyKind==2)     if(user.userinfo?.agency==null&&!(user.userinfo?.joinsrequested?.contains(Agency.Agencyinfo?.id)??false ) )
-                            InkWell(onTap: (){
-                              Dialogs().showdialog(context: context,tittle: getLang(context: context, key:"Join_Agency"), content: '${getLang(context: context, key: "Want_Join")} ${Agency.Agencyinfo?.name} ${getLang(context: context, key: "Agency")} ?', buttontext: getLang(context: context, key: "Yes"), onTap: ()async{
-                                Navigator.pop(context);
-                                Agency.RequsetJoinAgency(context: context);
-                              }, );
-                            },
-                              child: Container(decoration: BoxDecoration(border: Border.all(color: whitecolor),color: MainColor,borderRadius: BorderRadius.circular(20)), child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
-                                child: Text(getLang(context: context, key: "Join"),style: style1,),
-                              ),),
-                            ),
-                         if(user.userinfo?.agency==null&&(user.userinfo?.joinsrequested?.contains(Agency.Agencyinfo?.id)??false ) )
-                            InkWell(onTap: (){
-                              Dialogs().showtoast(getLang(context: context, key:"Request_Agency"));
-                            },
-                              child: Container(decoration: BoxDecoration(border: Border.all(color: whitecolor),color: MainColor,borderRadius: BorderRadius.circular(20)), child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 5),
-                                child: Text(getLang(context: context, key: "Requested"),style: style1,),
-                              ),),
-                            ),
                         ],
                       ),
                     ),
-
-
-
-                  ],
-                ),),
-                SliverToBoxAdapter(child: const SizedBox(height: 30,),),
-
-                SliverToBoxAdapter(child:  Row(
-                  children: [
-                    Text("اعضاء الوكاله",style: TextStyle(fontWeight: FontWeight.w600,fontSize: 14,height: 1,color: Colors.white),),
-                    Spacer(),
-
-                  ],
-                ),),
-                SliverToBoxAdapter(child: const SizedBox(height: 30,),),
-                SliverToBoxAdapter(child: Column(
-                  children:List.generate( Agency.useragincys.length, (index) =>Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: InkWell(
-                      onTap: () {
-                        if(user.userinfo?.id!=Agency.useragincys[index].id){
-                          user.GetShoweduserProfile(Agency.useragincys[index]);
-                          navigateTo(context: context,screen: ShowUserProfile());
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          CircleAvatar(backgroundColor: Colors.transparent,backgroundImage: CachedNetworkImageProvider(Agency.useragincys[index].image??''),),
-                          SizedBox(width: 5,),
-                          UserSideInfoWidgets(UserDate: Agency.useragincys[index],TextColor: Colors.black,)
-                        ],
+                    SliverToBoxAdapter(
+                      child: const SizedBox(
+                        height: 30,
                       ),
                     ),
-                  )),
-                )),
-
-               ],
-            ),
-          )),
-        )
-    );
+                    SliverToBoxAdapter(
+                        child: Column(
+                      children: List.generate(
+                          Agency.useragincys.length,
+                          (index) => Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: InkWell(
+                                  onTap: () {
+                                    if (user.userinfo?.id !=
+                                        Agency.useragincys[index].id) {
+                                      user.GetShoweduserProfile(
+                                          Agency.useragincys[index]);
+                                      navigateTo(
+                                          context: context,
+                                          screen: ShowUserProfile());
+                                    }
+                                  },
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.transparent,
+                                        backgroundImage:
+                                            CachedNetworkImageProvider(Agency
+                                                    .useragincys[index].image ??
+                                                ''),
+                                      ),
+                                      SizedBox(
+                                        width: 5,
+                                      ),
+                                      UserSideInfoWidgets(
+                                        UserDate: Agency.useragincys[index],
+                                        TextColor: Colors.black,
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              )),
+                    )),
+                  ],
+                ),
+              )),
+        ));
   }
+}
+
+Color _purple = Colors.green;
+
+Future<void> showSellTargetDialog(BuildContext context) async {
+  final controller = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  final vm = Provider.of<AagencyViewModel>(context, listen: false);
+
+  await showDialog(
+    context: context,
+    builder: (ctx) => Directionality(
+      textDirection: TextDirection.rtl,
+      child: AlertDialog(
+        backgroundColor: const Color(0xFFECE6F0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const Text(
+          "بيع التارجت",
+          style: TextStyle(
+              fontWeight: FontWeight.w600, fontSize: 18, color: Colors.black),
+        ),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: "مبلغ التارجت",
+              labelStyle: TextStyle(color: _purple),
+              enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: _purple, width: 2)),
+              focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: _purple, width: 2)),
+            ),
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return "ادخل المبلغ";
+              if ((int.tryParse(v) ?? 0) <= 0) return "مبلغ غير صحيح";
+              return null;
+            },
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.start,
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                final amount = controller.text.trim();
+                Navigator.pop(ctx);
+                vm.sellTarget(context: context, amount: amount);
+              }
+            },
+            child: Text("بيع", style: TextStyle(color: _purple, fontSize: 16)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child:
+                Text("إلغاء", style: TextStyle(color: _purple, fontSize: 16)),
+          ),
+        ],
+      ),
+    ),
+  );
 }

@@ -54,7 +54,7 @@ class Agencymodel {
     description = json['description'];
     password = json['password']?.toString();
     coins = _toInt(json['coins']);
-    agencyKind = _toInt(json['AgencyKind']);
+    agencyKind = _toInt(json['sellingTarget']);
 
     model = fixImageUrl(json['model']) ?? '';
 
@@ -83,7 +83,7 @@ class Agencymodel {
     data['description'] = description;
     data['password'] = password;
     data['coins'] = coins;
-    data['AgencyKind'] = agencyKind;
+    data['sellingTarget'] = agencyKind;
     data['model'] = model;
     data['image'] = image;
     data['user_number'] = userNumber;

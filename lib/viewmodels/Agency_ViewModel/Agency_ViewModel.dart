@@ -159,6 +159,20 @@ Dialogs().showtoast(getLang(context: context,key: "Sorry"));
     });
     notifyListeners();
   }
+  sellTarget({context, amount}) async {
+    showSpinner7();
+    await Agencyapi()
+        .sellTarget(context: context, Agancyid: Agencyinfo?.id, amount: amount)
+        .then((value) {
+      if (value == true) {
+        Dialogs().showtoast(getLang(context: context, key: "Done_Succ"));
+      } else {
+        Dialogs().showtoast(getLang(context: context, key: "Sorry"));
+      }
+      hideSpinner7();
+    });
+    notifyListeners();
+  }
   void showSpinner() {
     showloading = true;
     notifyListeners(); // (Method for ChangeNotifiers) Or equivalent call to rebuild the view
