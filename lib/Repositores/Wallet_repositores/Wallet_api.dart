@@ -3,13 +3,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-import '../../models/PayPalPackage.dart';
 import '../../util/app_constants.dart';
 
 class PurchasaApi {
   static const String _apiKey = 'goog_QbGwYjyXlePJXAYCANAMIAAbvsh';
 
-  final List<PayPalPackage> PayPalPackages = [];
 
   final Dio dio = Dio(
     BaseOptions(
@@ -51,6 +49,8 @@ class PurchasaApi {
   }
 
   // Fetch RevenueCat Offerings
+
+  // Fetch RevenueCat Offerings
   static Future<List<Offering>> fetchoffers() async {
     print('========== REVENUECAT OFFERS ==========');
 
@@ -64,37 +64,44 @@ class PurchasaApi {
 
       final Offerings offerings = await Purchases.getOfferings();
 
-      print('ALL OFFERINGS: ${offerings.all}');
+      print('ALL OFFERING IDENTIFIERS: ${offerings.all.keys}');
+      print('CURRENT OFFERING: ${offerings.current?.identifier}');
 
-      final Offering? current = offerings.current;
+      // Use Current Offering first, otherwise fallback to "veyro".
+      final Offering? selectedOffering =
+          offerings.current ?? offerings.all['veyro'];
 
-      if (current == null) {
-        print('NO CURRENT OFFERING FOUND');
-        print('Check your RevenueCat Offering configuration.');
+      if (selectedOffering == null) {
+        print('ERROR: No Current Offering and "veyro" was not found.');
+        print('Available offerings: ${offerings.all.keys}');
         print('======================================');
 
         return [];
       }
 
-      print('CURRENT OFFERING: $current');
-      print('OFFERING IDENTIFIER: ${current.identifier}');
-      print('AVAILABLE PACKAGES COUNT: '
-          '${current.availablePackages.length}');
+      print('SELECTED OFFERING: ${selectedOffering.identifier}');
+      print(
+        'AVAILABLE PACKAGES COUNT: '
+            '${selectedOffering.availablePackages.length}',
+      );
 
-      for (final Package package in current.availablePackages) {
+      for (final Package package in selectedOffering.availablePackages) {
+        final StoreProduct product = package.storeProduct;
+
         print('--------------------------------------');
         print('PACKAGE IDENTIFIER: ${package.identifier}');
         print('PACKAGE TYPE: ${package.packageType}');
-        print('STORE PRODUCT: ${package.storeProduct}');
-        print('PRODUCT IDENTIFIER: '
-            '${package.storeProduct.identifier}');
-        print('PRODUCT TITLE: ${package.storeProduct.title}');
-        print('PRODUCT PRICE: ${package.storeProduct.price}');
+        print('PRODUCT IDENTIFIER: ${product.identifier}');
+        print('PRODUCT TITLE: ${product.title}');
+        print('PRODUCT DESCRIPTION: ${product.description}');
+        print('PRODUCT PRICE: ${product.price}');
+        print('PRODUCT PRICE STRING: ${product.priceString}');
       }
 
       print('========== OFFERS COMPLETED ==========');
 
-      return [current];
+      // Keep the existing return type: List<Offering>.
+      return [selectedOffering];
     } on PlatformException catch (e, stackTrace) {
       print('========== REVENUECAT ERROR ==========');
       print('ERROR CODE: ${e.code}');
@@ -111,6 +118,7 @@ class PurchasaApi {
       return [];
     }
   }
+
 
   // Purchase RevenueCat Package
   static Future<bool> purchesPackage(Package package) async {

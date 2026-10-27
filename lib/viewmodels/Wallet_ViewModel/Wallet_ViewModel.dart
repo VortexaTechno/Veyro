@@ -122,17 +122,37 @@ class WalletViewmodel extends ChangeNotifier {
     try {
       final offerings = await PurchasaApi.fetchoffers();
 
+      debugPrint('========== REVENUECAT OFFERS ==========');
+      debugPrint('OFFERINGS COUNT: ${offerings.length}');
+
+      for (final offering in offerings) {
+        debugPrint('OFFERING ID: ${offering.identifier}');
+        debugPrint(
+          'AVAILABLE PACKAGES: ${offering.availablePackages.length}',
+        );
+      }
+
       packages = offerings
           .expand((offering) => offering.availablePackages)
           .toList();
 
-      debugPrint('OFFERINGS COUNT: ${offerings.length}');
+      debugPrint('========== REVENUECAT PACKAGES ==========');
       debugPrint('PACKAGES COUNT: ${packages.length}');
 
       for (final package in packages) {
         debugPrint('PACKAGE ID: ${package.identifier}');
-        debugPrint('PRODUCT ID: ${package.storeProduct.identifier}');
-        debugPrint('PRICE: ${package.storeProduct.priceString}');
+        debugPrint(
+          'PRODUCT ID: ${package.storeProduct.identifier}',
+        );
+        debugPrint(
+          'PRODUCT TITLE: ${package.storeProduct.title}',
+        );
+        debugPrint(
+          'PRODUCT TYPE: ${package.storeProduct.productCategory}',
+        );
+        debugPrint(
+          'PRICE: ${package.storeProduct.priceString}',
+        );
       }
 
       if (packages.isEmpty) {
@@ -153,7 +173,8 @@ class WalletViewmodel extends ChangeNotifier {
     } catch (e, stackTrace) {
       packages = [];
 
-      debugPrint('FETCH OFFERS ERROR: $e');
+      debugPrint('========== FETCH OFFERS ERROR ==========');
+      debugPrint('ERROR: $e');
       debugPrintStack(stackTrace: stackTrace);
 
       setResponse(
@@ -161,6 +182,8 @@ class WalletViewmodel extends ChangeNotifier {
         data: e.toString(),
         success: false,
       );
+
+      notifyListeners();
     } finally {
       hiddeSpinner();
     }
