@@ -520,7 +520,7 @@ class ProfileScrean extends StatelessWidget {
                       SizedBox(
                         height: 8,
                       ),
-                    if (user.userinfo?.agency == null)
+                    if (user.userinfo?.agency != null)
                       InkWell(
                         onTap: () {
                           Navigator.pushNamed(

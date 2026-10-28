@@ -302,41 +302,79 @@ body: Container(height: SizeConfig.screenHeight,width: SizeConfig.screenWidth,
       const SizedBox(
         height: 30,
       ),
+
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 10,
+        ),
         child: InkWell(
-          onTap: (){
-            Navigator.pushNamed(context, AppConstants.PickCode_Screan2);
-
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              AppConstants.PickCode_Screan2,
+            );
           },
-          child: Row(children: [
-            SizedBox(width: 15,),
-            Image.asset(
-              user.Flag2,
-              package: countryCodePackageName,
-              width: SizeConfig.TenSize!*3,
-            ),
-            SizedBox(width: 15,),
-            Container(  height: 40, decoration: BoxDecoration( color: Color(0xFF1878f3).withOpacity( 0.1),borderRadius: BorderRadius.circular(20)  ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  children: [
-                Text(user.Name2??'',style: style6.copyWith(fontSize: 13,color: Colors.black),),
+          child: Row(
+            children: [
+              const SizedBox(width: 10),
 
-                Icon(Icons.navigate_next)
+              Image.asset(
+                user.Flag2,
+                package: 'country_calling_code_picker_plus',
+                width: 30,
+                height: 22,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const SizedBox(
+                    width: 30,
+                    height: 22,
+                    child: Icon(
+                      Icons.flag_outlined,
+                      color: Colors.grey,
+                      size: 22,
+                    ),
+                  );
+                },
+              ),
 
-                  ],
+              const SizedBox(width: 10),
+
+              Expanded(
+                child: Container(
+                  height: 40,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1878f3)
+                        .withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user.Name2 ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: style6.copyWith(
+                            fontSize: 13,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.navigate_next),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-
-          ],),
+            ],
+          ),
         ),
-
       ),
-     Spacer(),
+
+      Spacer(),
 
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),

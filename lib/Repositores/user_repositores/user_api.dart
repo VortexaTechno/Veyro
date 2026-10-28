@@ -396,46 +396,96 @@ int target=0;
 
     return check;
   }
-  Future<List> Exchangecoins({context,jwile}) async {
-    bool check=false;
-    int coins=0;
-    int input=0;
+
+  Future<List> Exchangecoins({context, jwile}) async {
+    bool check = false;
+    int coins = 0;
+    int input = 0;
+
     try {
       FormData formData = FormData.fromMap({
         "user_id": UserId.toString(),
-        "beans":jwile.toString()
-
+        "beans": jwile.toString(),
       });
+
+      print('========== EXCHANGE COINS REQUEST ==========');
+      print('URL: ${dio.options.baseUrl}api/Exchangecoins');
+      print('METHOD: POST');
+      print('USER ID: $UserId');
+      print('BEANS: $jwile');
 
       Response response2 = await dio.post(
         'api/Exchangecoins',
         data: formData,
       );
 
+      print('========== EXCHANGE COINS RESPONSE ==========');
+      print('STATUS CODE: ${response2.statusCode}');
+      print('STATUS MESSAGE: ${response2.statusMessage}');
+      print('RESPONSE DATA: ${response2.data}');
+      print('RESPONSE HEADERS: ${response2.headers}');
+
       if (response2.statusCode == 200) {
-       print(response2.data['Exchangecoins']['UserCoins'].runtimeType);
-       print(response2.data['Exchangecoins']['UserInput'].runtimeType);
-       coins=response2.data['Exchangecoins']['UserCoins'];
-       input=response2.data['Exchangecoins']['UserInput'];
-        check=true;
+        final data = response2.data['Exchangecoins'];
 
-      }else{
+        print('UserCoins: ${data['UserCoins']}');
+        print('UserCoins Type: ${data['UserCoins'].runtimeType}');
+        print('UserInput: ${data['UserInput']}');
+        print('UserInput Type: ${data['UserInput'].runtimeType}');
 
-        check=false;
-      }
-    } catch (e) {
-      check=false;
-      print(e);
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorRegesterToast(e.response?.data['errNum'],context);
+        coins = int.tryParse(data['UserCoins'].toString()) ?? 0;
+        input = int.tryParse(data['UserInput'].toString()) ?? 0;
+
+        check = true;
       } else {
-        print(e);
+        print('REQUEST FAILED: Status code is not 200');
+        check = false;
       }
+    } on DioException catch (e, stackTrace) {
+      print('========== EXCHANGE COINS DIO ERROR ==========');
+      print('REQUEST URL: ${e.requestOptions.uri}');
+      print('REQUEST METHOD: ${e.requestOptions.method}');
+      print('REQUEST DATA: ${e.requestOptions.data}');
+      print('STATUS CODE: ${e.response?.statusCode}');
+      print('STATUS MESSAGE: ${e.response?.statusMessage}');
+      print('ERROR TYPE: ${e.type}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('SERVER RESPONSE: ${e.response?.data}');
+      print('RESPONSE HEADERS: ${e.response?.headers}');
+      print('STACK TRACE: $stackTrace');
+
+      final responseData = e.response?.data;
+
+      if (responseData is Map) {
+        print('errNum: ${responseData['errNum']}');
+
+        if (context != null && responseData['errNum'] != null) {
+          Dialogs().ShowErrorRegesterToast(
+            responseData['errNum'],
+            context,
+          );
+        }
+      }
+
+      check = false;
+    } catch (e, stackTrace) {
+      print('========== EXCHANGE COINS GENERAL ERROR ==========');
+      print('ERROR: $e');
+      print('ERROR TYPE: ${e.runtimeType}');
+      print('STACK TRACE: $stackTrace');
+
+      check = false;
     }
 
-    return [check,coins,input];
+    print('========== EXCHANGE COINS RESULT ==========');
+    print('CHECK: $check');
+    print('COINS: $coins');
+    print('INPUT: $input');
+    print('============================================');
+
+    return [check, coins, input];
   }
+
   Future<bool> Updatebubbles({bubbles,context}) async {
     bool check=false;
     try {
