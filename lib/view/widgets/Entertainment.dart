@@ -11,6 +11,7 @@ import 'package:ahlachat/viewmodels/Auth_Viewmodel/LoginViewModel.dart';
 import 'package:ahlachat/viewmodels/Room_Viewmodel/Room_Viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 class Entertainment extends StatefulWidget {
   const Entertainment({Key? key}) : super(key: key);
 
@@ -21,133 +22,279 @@ class Entertainment extends StatefulWidget {
 class _EntertainmentState extends State<Entertainment> {
   @override
   Widget build(BuildContext context) {
-    RoomViewmodel Room=   Provider.of<RoomViewmodel>(context,listen: true);
-    LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: true);
-    AgoraViewmodel Agora= Provider.of<AgoraViewmodel>(context,listen: true);
+    RoomViewmodel Room = Provider.of<RoomViewmodel>(context, listen: true);
+    LoginViewmodel user = Provider.of<LoginViewmodel>(context, listen: true);
+    AgoraViewmodel Agora = Provider.of<AgoraViewmodel>(context, listen: true);
     return Container(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(mainAxisSize: MainAxisSize.min,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 10,),
-
-            Text('الصوت',style: style2.copyWith(fontSize: 13),) ,
+            SizedBox(
+              height: 10,
+            ),
+            Text(
+              'الصوت',
+              style: style2.copyWith(fontSize: 13),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: InkWell(onTap: () {
-                if(!Agora.disableAudio){
-                  Agora.closeroomvoice();
-
-                }else{
-                  Agora.enableroomvoice();
-                }
-                setState(() {
-
-                });
-              }, child: CircleAvatar(radius: 18,backgroundColor: Colors.transparent,child: Image.asset(Agora.disableAudio?'assets/image/ic_hk_tool_mute_off.png':'assets/image/ic_music_no_mute_voice.png',height: 27,color: MainColor,))),
-            ),
-
-            Text('القسم الترفيهي',style: style2.copyWith(fontSize: 13),) ,
-            SizedBox(height: 25,),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                InkWell(onTap: (){
-                  Navigator.pop(context);
-                  showModalBottomSheet( barrierColor: Colors.black.withAlpha(1),
-                      backgroundColor: Colors.transparent, isScrollControlled: true,
-                      context: context,
-                      builder: (context) {
-                        return Container(height: 600,child: WebViewRollet(name: getLang( context: context, key: "Terms_Service"), link: 'https://gztest.leadercc.com/hdstar_games/wheel2/index.html?uid=${user.userinfo?.id}&token=${user.userinfo?.rememperToken}&lang=zh-CN&roomid=${Room.Currentroom?.id}&time=1688516909952',));
-                      });
-                },child: Image.asset(Images.fruits,height: 60, width: 60,fit: BoxFit.fill)),
-                InkWell(onTap: (){
-                  Navigator.pop(context);
-                  Room.Playdice(context: context );
-                },child: Image.asset(Images.dice,height: 60, width: 60,fit: BoxFit.fill)),
-                InkWell(onTap: (){
-                  Navigator.pop(context);
-                  Room.ChairsRoom.clear();
-                  Room.Rolletchoice.clear();
-                  Room.Currentroom?.chairs?.forEach((element) {
-                    if(element.userId!=null&&element.user!=null){
-                      Room.ChairsRoom.add(element);
-
+              child: InkWell(
+                  onTap: () {
+                    if (!Agora.disableAudio) {
+                      Agora.closeroomvoice();
+                    } else {
+                      Agora.enableroomvoice();
                     }
-                  });
-                  print(Room.ChairsRoom);
-                  showModalBottomSheet(barrierColor:Colors.transparent,shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight:Radius.circular(30), )),
-                    context: context,
-                    builder: (context) {
-                      return StatefulBuilder(
-                        builder: (BuildContext context, void Function(void Function()) setState) {
-                          return Container(decoration: BoxDecoration(borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight:Radius.circular(30), ),image: DecorationImage(image: ExactAssetImage(Images.VipBackground),fit: BoxFit.cover)), width: SizeConfig.screenWidth,child: Column(
-                            children: [
-                              SizedBox(height: 20,),
-                              Expanded(
-                                child: ListView.builder(itemCount: Room.ChairsRoom.length,itemBuilder: (context, index) => Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, ).copyWith(top: 10),
-                                  child: InkWell(onTap:(){
-                                    if( Room.Rolletchoice.contains(Room.ChairsRoom[index].user?.name)){
-                                      setState(() {
-                                        Room.RemoveRolletchoice(Room.ChairsRoom[index].user?.name??'');
-                                      });
-                                    }else{
-                                      setState(() {
-                                        Room.AddRolletchoice(Room.ChairsRoom[index].user?.name??'');
-                                      });
-                                    }
-                                  } ,
-                                    child: Container(width:SizeConfig.screenWidth,height: 50,decoration: BoxDecoration(border: Border.all(color: Colors.white)),child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20) ,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(Room.ChairsRoom[index].user?.name??'',style: style1.copyWith(fontSize: 13),),
-                                          Room.Rolletchoice.contains(Room.ChairsRoom[index].user?.name)?    Icon(Icons.check_box,color: Colors.white):Icon(Icons.check_box_outline_blank_outlined,color: Colors.white),
-
-                                        ],
+                    setState(() {});
+                  },
+                  child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Colors.transparent,
+                      child: Image.asset(
+                        Agora.disableAudio
+                            ? 'assets/image/ic_hk_tool_mute_off.png'
+                            : 'assets/image/ic_music_no_mute_voice.png',
+                        height: 27,
+                        color: MainColor,
+                      ))),
+            ),
+            Text(
+              'القسم الترفيهي',
+              style: style2.copyWith(fontSize: 13),
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      showModalBottomSheet(
+                          barrierColor: Colors.black.withAlpha(1),
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          context: context,
+                          builder: (context) {
+                            return Container(
+                                height: 600,
+                                child: WebViewRollet(
+                                    name: getLang(
+                                        context: context, key: "Terms_Service"),
+                                    link:
+                                        'https://fruit.egyptiantechs.com/?token=${user.userinfo?.rememperToken}'));
+                          });
+                    },
+                    child: Image.asset(Images.fruits,
+                        height: 60, width: 60, fit: BoxFit.fill)),
+                InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Room.Playdice(context: context);
+                    },
+                    child: Image.asset(Images.dice,
+                        height: 60, width: 60, fit: BoxFit.fill)),
+                InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Room.ChairsRoom.clear();
+                      Room.Rolletchoice.clear();
+                      Room.Currentroom?.chairs?.forEach((element) {
+                        if (element.userId != null && element.user != null) {
+                          Room.ChairsRoom.add(element);
+                        }
+                      });
+                      print(Room.ChairsRoom);
+                      showModalBottomSheet(
+                        barrierColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        )),
+                        context: context,
+                        builder: (context) {
+                          return StatefulBuilder(
+                            builder: (BuildContext context,
+                                void Function(void Function()) setState) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(30),
+                                      topRight: Radius.circular(30),
+                                    ),
+                                    image: DecorationImage(
+                                        image: ExactAssetImage(
+                                            Images.VipBackground),
+                                        fit: BoxFit.cover)),
+                                width: SizeConfig.screenWidth,
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    Expanded(
+                                      child: ListView.builder(
+                                        itemCount: Room.ChairsRoom.length,
+                                        itemBuilder: (context, index) =>
+                                            Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                          ).copyWith(top: 10),
+                                          child: InkWell(
+                                            onTap: () {
+                                              if (Room.Rolletchoice.contains(
+                                                  Room.ChairsRoom[index].user
+                                                      ?.name)) {
+                                                setState(() {
+                                                  Room.RemoveRolletchoice(Room
+                                                          .ChairsRoom[index]
+                                                          .user
+                                                          ?.name ??
+                                                      '');
+                                                });
+                                              } else {
+                                                setState(() {
+                                                  Room.AddRolletchoice(Room
+                                                          .ChairsRoom[index]
+                                                          .user
+                                                          ?.name ??
+                                                      '');
+                                                });
+                                              }
+                                            },
+                                            child: Container(
+                                              width: SizeConfig.screenWidth,
+                                              height: 50,
+                                              decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                      color: Colors.white)),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 20),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      Room.ChairsRoom[index]
+                                                              .user?.name ??
+                                                          '',
+                                                      style: style1.copyWith(
+                                                          fontSize: 13),
+                                                    ),
+                                                    Room.Rolletchoice.contains(
+                                                            Room
+                                                                .ChairsRoom[
+                                                                    index]
+                                                                .user
+                                                                ?.name)
+                                                        ? Icon(Icons.check_box,
+                                                            color: Colors.white)
+                                                        : Icon(
+                                                            Icons
+                                                                .check_box_outline_blank_outlined,
+                                                            color:
+                                                                Colors.white),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ), ),
-                                  ),
-                                ),),
-                              ),
-                              Padding(padding: EdgeInsets.symmetric(horizontal: 20),
-                                  child: InkWell(onTap: (){
-                                    if(  Room.Rolletchoice.length>=2){
-                                      Navigator.pop(context);
-                                      showModalBottomSheet(barrierColor:Colors.transparent,context: context, shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight:Radius.circular(30), )), builder: (BuildContext context) {
-
-                                        return const RolletFullscrean();
-                                      });
-                                    }else{
-                                      Dialogs().showtoast('عدد الاشخاص يجب ان يكون 2 او اكثر');
-                                    }
-                                  },child: Container(child: Center(child: Text(getLang(context: context,key: 'Start'),style: style2,)),decoration: BoxDecoration( color: Colors.white,borderRadius:  BorderRadius.circular(10)),height: 50,width: SizeConfig.screenWidth))),
-                              SizedBox(height: 20,),
-                            ],
-                          ),);
+                                    ),
+                                    Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: InkWell(
+                                            onTap: () {
+                                              if (Room.Rolletchoice.length >=
+                                                  2) {
+                                                Navigator.pop(context);
+                                                showModalBottomSheet(
+                                                    barrierColor:
+                                                        Colors.transparent,
+                                                    context: context,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .only(
+                                                      topLeft:
+                                                          Radius.circular(30),
+                                                      topRight:
+                                                          Radius.circular(30),
+                                                    )),
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return const RolletFullscrean();
+                                                    });
+                                              } else {
+                                                Dialogs().showtoast(
+                                                    'عدد الاشخاص يجب ان يكون 2 او اكثر');
+                                              }
+                                            },
+                                            child: Container(
+                                                child: Center(
+                                                    child: Text(
+                                                  getLang(
+                                                      context: context,
+                                                      key: 'Start'),
+                                                  style: style2,
+                                                )),
+                                                decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10)),
+                                                height: 50,
+                                                width:
+                                                    SizeConfig.screenWidth))),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
                         },
-
                       );
                     },
-                  );
-                },child: Image.asset(Images.Rolletuser,height: 60, width: 60,fit: BoxFit.fill)),
-                InkWell(onTap: (){
-                  Navigator.pop(context);
-                  user.SelectGuess(val: null);
-                  user.SelectGuesscoins(val: null);
-                  showModalBottomSheet(barrierColor:Colors.transparent,backgroundColor:  Colors.black,shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight:Radius.circular(30), )),
-                      context: context,
-                      builder: (context) {
-                        return GuessWidgets();
-                      });
-                },child: Image.asset(Images.guessing,height: 60, width: 60,fit: BoxFit.fill)),
-
+                    child: Image.asset(Images.Rolletuser,
+                        height: 60, width: 60, fit: BoxFit.fill)),
+                InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      user.SelectGuess(val: null);
+                      user.SelectGuesscoins(val: null);
+                      showModalBottomSheet(
+                          barrierColor: Colors.transparent,
+                          backgroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30),
+                          )),
+                          context: context,
+                          builder: (context) {
+                            return GuessWidgets();
+                          });
+                    },
+                    child: Image.asset(Images.guessing,
+                        height: 60, width: 60, fit: BoxFit.fill)),
               ],
             ),
-
-            SizedBox(height: 25,),
+            SizedBox(
+              height: 25,
+            ),
           ],
         ),
       ),
