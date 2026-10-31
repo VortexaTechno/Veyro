@@ -45,8 +45,8 @@ class UserFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 75,
-      height: 75,
+      width: 80,
+      height: 80,
       child: Stack(
         fit: StackFit.loose,
         alignment: Alignment.center,
