@@ -20,9 +20,16 @@ class PhotoFrame extends StatelessWidget {
         children: [
           image == null || image == ''
               ? const SizedBox()
-              : CircleAvatar(backgroundColor: Colors.transparent, radius: 29, backgroundImage: CachedNetworkImageProvider(image ?? '')),
-          Frame == null || Frame == '' ? const SizedBox() : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
-          image == null ? Container(child: Image.asset(Images.Chairs)) : const SizedBox(),
+              : CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  radius: 29,
+                  backgroundImage: CachedNetworkImageProvider(image ?? '')),
+          Frame == null || Frame == ''
+              ? const SizedBox()
+              : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
+          image == null
+              ? Container(child: Image.asset(Images.Chairs))
+              : const SizedBox(),
         ],
       ),
     );
@@ -38,17 +45,24 @@ class UserFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 100,
-      height: 100,
+      width: 75,
+      height: 75,
       child: Stack(
         fit: StackFit.loose,
         alignment: Alignment.center,
         children: [
           image == null || image == ''
               ? const SizedBox()
-              : CircleAvatar(backgroundColor: Colors.transparent, radius: 29, backgroundImage: CachedNetworkImageProvider(image ?? '')),
-          Frame == null || Frame == '' ? const SizedBox() : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
-          image == null ? Container(child: Image.asset(Images.Chairs)) : const SizedBox(),
+              : CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  radius: 25,
+                  backgroundImage: CachedNetworkImageProvider(image ?? '')),
+          Frame == null || Frame == ''
+              ? const SizedBox()
+              : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
+          image == null
+              ? Container(child: Image.asset(Images.Chairs))
+              : const SizedBox(),
         ],
       ),
     );
@@ -68,10 +82,17 @@ class MainFrame extends StatelessWidget {
       children: [
         image == null || image == ''
             ? const SizedBox()
-            : CircleAvatar(backgroundColor: Colors.transparent, radius: 30, backgroundImage: CachedNetworkImageProvider(image ?? '')),
+            : CircleAvatar(
+                backgroundColor: Colors.transparent,
+                radius: 30,
+                backgroundImage: CachedNetworkImageProvider(image ?? '')),
         Frame == null || Frame == ''
             ? const SizedBox()
-            : SizedBox(height: 90, child: Container(child: SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain))),
+            : SizedBox(
+                height: 90,
+                child: Container(
+                    child: SVGAEasyPlayer(
+                        resUrl: Frame ?? '', fit: BoxFit.contain))),
       ],
     );
   }
@@ -95,10 +116,15 @@ class PhotoFrame2 extends StatelessWidget {
                 image == null || image == ''
                     ? const SizedBox()
                     : Align(
-                    alignment: Alignment.center,
-                    child: CircleAvatar(
-                        backgroundColor: Colors.transparent, radius: 47, backgroundImage: CachedNetworkImageProvider(image ?? ''))),
-                Frame == null || Frame == '' ? const SizedBox() : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
+                        alignment: Alignment.center,
+                        child: CircleAvatar(
+                            backgroundColor: Colors.transparent,
+                            radius: 47,
+                            backgroundImage:
+                                CachedNetworkImageProvider(image ?? ''))),
+                Frame == null || Frame == ''
+                    ? const SizedBox()
+                    : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
               ],
             )));
   }
@@ -120,9 +146,15 @@ class FrameUserProfile extends StatelessWidget {
           image == null || image == ''
               ? const SizedBox()
               : Align(
-              alignment: Alignment.center,
-              child: CircleAvatar(backgroundColor: Colors.transparent, radius: 25, backgroundImage: CachedNetworkImageProvider(image ?? ''))),
-          Frame == null || Frame == '' ? const SizedBox() : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
+                  alignment: Alignment.center,
+                  child: CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      radius: 25,
+                      backgroundImage:
+                          CachedNetworkImageProvider(image ?? ''))),
+          Frame == null || Frame == ''
+              ? const SizedBox()
+              : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
         ],
       ),
     );
@@ -145,9 +177,14 @@ class FrameRelationsProfile extends StatelessWidget {
           image == null || image == ''
               ? const SizedBox()
               : Align(
-              alignment: Alignment.center,
-              child: CircleAvatar(backgroundColor: Colors.transparent, backgroundImage: CachedNetworkImageProvider(image ?? ''))),
-          Frame == null || Frame == '' ? const SizedBox() : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
+                  alignment: Alignment.center,
+                  child: CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      backgroundImage:
+                          CachedNetworkImageProvider(image ?? ''))),
+          Frame == null || Frame == ''
+              ? const SizedBox()
+              : SVGAEasyPlayer(resUrl: Frame ?? '', fit: BoxFit.contain),
         ],
       ),
     );
@@ -170,12 +207,18 @@ class LeaderboardFrame extends StatelessWidget {
             image == null || image == ''
                 ? const SizedBox()
                 : Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 0),
-                  child: CircleAvatar(backgroundColor: Colors.transparent, radius: 30, backgroundImage: CachedNetworkImageProvider(image ?? '')),
-                )),
-            Frame == null || Frame == '' ? const SizedBox() : Image.asset(Frame ?? ''),
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 0),
+                      child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 30,
+                          backgroundImage:
+                              CachedNetworkImageProvider(image ?? '')),
+                    )),
+            Frame == null || Frame == ''
+                ? const SizedBox()
+                : Image.asset(Frame ?? ''),
           ],
         ));
   }

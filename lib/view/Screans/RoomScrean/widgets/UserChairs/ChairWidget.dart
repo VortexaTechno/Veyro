@@ -9,8 +9,6 @@ import 'package:ahlachat/view/Screans/RoomScrean/widgets/SendGift.dart';
 import 'package:ahlachat/view/widgets/ModelSheet.dart';
 import 'package:ahlachat/viewmodels/Agora_ViewModel/AgoraViewmodel.dart';
 import 'package:ahlachat/viewmodels/Gifts_Viewmodel/Gifts_Viewmodel.dart';
-import 'package:ahlachat/viewmodels/Socket_ViewModel/Socketviewmodel.dart';
-import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ahlachat/util/helperclass.dart';

@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:ahlachat/Repositores/Room_repositores/Room_repository.dart';
 import 'package:ahlachat/models/FlagModel.dart';
 import 'package:ahlachat/models/KarismaCollectModel.dart';
@@ -6,6 +8,7 @@ import 'package:ahlachat/models/Leaderboardroommodel.dart';
 import 'package:ahlachat/models/Weeklystarmodel.dart';
 import 'package:ahlachat/viewmodels/Socket_ViewModel/Socketviewmodel.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
  import 'package:provider/provider.dart';
 
@@ -1344,25 +1347,75 @@ print(response2.data);
 
     return state;
   }
-  Future<RoomModel> CreateRoom({context, Category, city, image, name, backgroundimage, RoomAds}) async {
+
+  Future<RoomModel> CreateRoom({
+    required BuildContext context,
+    required Category,
+    required city,
+    required image,
+    required name,
+    required backgroundimage,
+    required RoomAds,
+  }) async {
     try {
+      // 1. Validate image
+      if (image == null) {
+        print('❌ CREATE ROOM: Image is null');
+        return Roominfo;
+      }
+
+      final imageFile = File(image.path);
+
+      print('🖼️ IMAGE PATH: ${image.path}');
+      print('🖼️ IMAGE EXISTS: ${await imageFile.exists()}');
+
+      if (!await imageFile.exists()) {
+        throw Exception('Image file does not exist: ${image.path}');
+      }
+
+      // 2. Read image bytes
+      final imageBytes = await imageFile.readAsBytes();
+
+      print('🖼️ IMAGE SIZE: ${imageBytes.length} bytes');
+
+      if (imageBytes.isEmpty) {
+        throw Exception('Selected image is empty');
+      }
+
+      // 3. Create Multipart File from bytes
+      final multipartImage = MultipartFile.fromBytes(
+        imageBytes,
+        filename: image.path.split(Platform.pathSeparator).last,
+      );
+
+      // 4. Prepare FormData
       FormData formData = FormData.fromMap({
         "name": name.toString(),
-        "image": await MultipartFile.fromFile(image?.path, filename: image?.path?.split('/')?.last),
+        "image": multipartImage,
         "admin_id": UserId.toString(),
-        "Category": Category,
-        "city": city,
+        "Category": Category.toString(),
+        "city": city.toString(),
         "animateimage": backgroundimage.toString(),
-        "RoomAds": RoomAds.toString()
+        "RoomAds": RoomAds.toString(),
       });
 
       print('🚀 CREATE ROOM → URL: ${dio.options.baseUrl}api/CreateRoom');
       print('🚀 FIELDS: ${formData.fields}');
-      print('🚀 FILES: ${formData.files.map((f) => '${f.key}: ${f.value.filename}').toList()}');
+      print(
+        '🚀 FILES: ${formData.files.map(
+              (f) => '${f.key}: ${f.value.filename}',
+        ).toList()}',
+      );
 
+      // 5. Send Request
       Response response2 = await dio.post(
         'api/CreateRoom',
         data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          receiveTimeout: const Duration(seconds: 60),
+          sendTimeout: const Duration(seconds: 60),
+        ),
       );
 
       print('📥 URL: ${response2.requestOptions.uri}');
@@ -1371,6 +1424,7 @@ print(response2.data);
 
       if (response2.statusCode == 200) {
         Roominfo = RoomModel.fromJson(response2.data['room']);
+
         print('✅ CREATE ROOM SUCCESS | room id: ${Roominfo.id}');
       } else {
         print('❌ CREATE ROOM FAILED | status: ${response2.statusCode}');
@@ -1384,6 +1438,7 @@ print(response2.data);
       print('❌ MESSAGE: ${e.message}');
 
       final data = e.response?.data;
+
       if (data is Map && data['errNum'] != null) {
         Dialogs().ShowErrorRegesterToast(data['errNum'], context);
       }
@@ -1393,7 +1448,9 @@ print(response2.data);
     }
 
     return Roominfo;
-  }  Future<bool>  LeaveRoom({ context,Roomid}) async {
+  }
+
+  Future<bool>  LeaveRoom({ context,Roomid}) async {
 bool leaved=false;
 
     try {

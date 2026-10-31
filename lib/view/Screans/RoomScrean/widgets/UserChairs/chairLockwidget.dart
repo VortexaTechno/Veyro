@@ -114,8 +114,8 @@ class ChairLockwidget extends StatelessWidget {
                   Room.Currentroom?.chairs?[index].Lock != 0
                       ? Images.LockChairs
                       : Images.Chairs,
-                  height: 55,
-                  width: 55))
+                  height: 75,
+                  width: 75))
         else
           PopupMenuButton(
               color: Colors.black,
@@ -211,8 +211,8 @@ class ChairLockwidget extends StatelessWidget {
                   Room.Currentroom?.chairs?[index].Lock != 0
                       ? Images.LockChairs
                       : Images.Chairs,
-                  height: 50,
-                  width: 50)),
+                  height: 75,
+                  width: 75)),
       ],
     );
   }
