@@ -1,5 +1,3 @@
-
-
 import 'dart:io';
 
 import 'package:ahlachat/Repositores/Moment_repositores/Moment_repository.dart';
@@ -7,13 +5,12 @@ import 'package:ahlachat/models/FamilyModel.dart';
 import 'package:ahlachat/models/FamilyRequest.dart';
 import 'package:ahlachat/models/FamilyRequestModel.dart';
 import 'package:ahlachat/models/Leaderboardusermodel.dart';
-import 'package:ahlachat/models/RoomModel.dart';
 import 'package:ahlachat/models/Usermodel.dart';
-import 'package:ahlachat/util/Dialogs.dart';
 import 'package:ahlachat/util/app_constants.dart';
 import 'package:ahlachat/viewmodels/Auth_Viewmodel/LoginViewModel.dart';
 import 'package:ahlachat/viewmodels/Family_ViewModel/Family_ViewModel.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -39,12 +36,60 @@ class Familyapi extends MomentRepository {
   List<FamilyRequest>RequestesFamily=[];
   List<usermodel> FamilyMembers=[];
   final ImagePicker _picker= ImagePicker();
+
+  // ───────────────────────── Logging helpers ─────────────────────────
+
+  /// طباعة الـ Request + Status + Response
+  void _logResponse(String tag, Response res) {
+    final reqData = res.requestOptions.data;
+    debugPrint('┌────────── [$tag] RESPONSE ──────────');
+    debugPrint('│ URL    : ${res.requestOptions.uri}');
+    debugPrint('│ Method : ${res.requestOptions.method}');
+    if (reqData is FormData) {
+      debugPrint('│ Request fields: ${reqData.fields}');
+      debugPrint('│ Request files : ${reqData.files.map((f) => f.key).toList()}');
+    } else if (reqData != null) {
+      debugPrint('│ Request data  : $reqData');
+    }
+    debugPrint('│ Status : ${res.statusCode} ${res.statusMessage ?? ''}');
+    debugPrint('│ Data   : ${res.data}');
+    debugPrint('└──────────────────────────────────────');
+  }
+
+  /// طباعة الخطأ + Status + Response القادم من السيرفر (إن وجد)
+  void _logError(String tag, Object e, [StackTrace? stackTrace]) {
+    debugPrint('┌────────── [$tag] ERROR ──────────');
+    if (e is DioException) {
+      debugPrint('│ Type    : ${e.type}');
+      debugPrint('│ URL     : ${e.requestOptions.uri}');
+      debugPrint('│ Method  : ${e.requestOptions.method}');
+      final reqData = e.requestOptions.data;
+      if (reqData is FormData) {
+        debugPrint('│ Request fields: ${reqData.fields}');
+      } else if (reqData != null) {
+        debugPrint('│ Request data  : $reqData');
+      }
+      debugPrint('│ Status  : ${e.response?.statusCode} ${e.response?.statusMessage ?? ''}');
+      debugPrint('│ Response: ${e.response?.data}');
+      debugPrint('│ Message : ${e.message}');
+    } else {
+      debugPrint('│ Error   : $e');
+    }
+    if (stackTrace != null) {
+      debugPrint('│ StackTrace: $stackTrace');
+    }
+    debugPrint('└──────────────────────────────────────');
+  }
+
+  // ───────────────────────── API functions ─────────────────────────
+
   Future<List<FamilyModel>>  SearchFamily( tittle)async {
 
     try {
       Response response2 = await dio.get(
         '/api/SearchFAmily/$tittle',
       );
+      _logResponse('SearchFamily', response2);
 
       if (response2.statusCode == 200) {
         List list =response2.data['Family'];
@@ -53,8 +98,8 @@ class Familyapi extends MomentRepository {
         });
 
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('SearchFamily', e, s);
     }
 
     return AllFamily;
@@ -75,6 +120,7 @@ class Familyapi extends MomentRepository {
         'api/EditFamilyImage',
         data: formData,
       );
+      _logResponse('EditFamilyImag', response2);
 
       if (response2.statusCode == 200) {
         Provider.of<FamilyViewModel>(context,listen: false). UpdateFamilyimage(image:response2.data['Families'] );
@@ -83,9 +129,9 @@ class Familyapi extends MomentRepository {
       }else{
         read=false;
       }
-    } catch (e) {
+    } catch (e, s) {
       read=false;
-      print(e);
+      _logError('EditFamilyImag', e, s);
     }
 
     return read;
@@ -106,16 +152,15 @@ class Familyapi extends MomentRepository {
       Response response2 = await dio.get(
         '/api/GetFamilyStar/$id',
       );
-      if (response2.statusCode == 200) {
+      _logResponse('GetMembersLeaderboard', response2);
 
+      if (response2.statusCode == 200) {
 
         Leaderboardsupported=ListoflEaderboardcategory.fromJson(response2.data['Leaderboard']['supporter']);
 
-
-
       }
-    } catch (e) {
-print(e);
+    } catch (e, s) {
+      _logError('GetMembersLeaderboard', e, s);
     }
 
     return Leaderboardsupported ;
@@ -128,17 +173,15 @@ print(e);
       Response response2 = await dio.get(
         '/api/GetFamilyProfile/$id',
       );
-print(response2.data);
+      _logResponse('GetFamilyProfile', response2);
+
       if (response2.statusCode == 200) {
 
-
-
-          FamilyProfile=FamilyModel.fromJson(response2.data['Family'] );
-
+        FamilyProfile=FamilyModel.fromJson(response2.data['Family'] );
 
       }
-    } catch (e) {
-print(e);
+    } catch (e, s) {
+      _logError('GetFamilyProfile', e, s);
     }
 
     return FamilyProfile;
@@ -155,6 +198,7 @@ print(e);
       Response response2 = await dio.get(
         '/api/GetRequestFamily/$id',
       );
+      _logResponse('GetFamilyRequest', response2);
 
       if (response2.statusCode == 200) {
         List list =response2.data['Families'] ;
@@ -164,8 +208,8 @@ print(e);
         });
 
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('GetFamilyRequest', e, s);
 
     }
 
@@ -179,6 +223,7 @@ print(e);
       Response response2 = await dio.get(
         '/api/GetFamilyMembers/$id',
       );
+      _logResponse('GetFamilyMembers', response2);
 
       if (response2.statusCode == 200) {
         List list =response2.data['users'] ;
@@ -188,8 +233,8 @@ print(e);
         });
 
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('GetFamilyMembers', e, s);
 
     }
 
@@ -206,12 +251,13 @@ print(e);
       Response response2 = await dio.get(
         '/api/EditFamilyyName/$id/$name',
       );
+      _logResponse('EditFamilyNames', response2);
 
       if (response2.statusCode == 200) {
-       send=true;
+        send=true;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('EditFamilyNames', e, s);
       send=false;
     }
 
@@ -226,12 +272,13 @@ print(e);
       Response response2 = await dio.get(
         '/api/ExchangeFamilyCoins/$id',
       );
+      _logResponse('ExchangeFamily', response2);
 
       if (response2.statusCode == 200) {
         send=true;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('ExchangeFamily', e, s);
       send=false;
     }
 
@@ -252,7 +299,8 @@ print(e);
         'api/joinFamily',
         data: formData,
       );
-print(response2.data);
+      _logResponse('SentjoinRequesr', response2);
+
       if (response2.statusCode == 200) {
         LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: false);
 
@@ -260,12 +308,12 @@ print(response2.data);
         user.AddFamilyRequest(Requtest.familyId??0);
         print(Requtest.id);
         send=true;
-       }else{
+      }else{
 
         send=false;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('SentjoinRequesr', e, s);
 
     }
 
@@ -287,17 +335,15 @@ print(response2.data);
         'api/CreateFamily',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('CreateFamily', response2);
+
       if (response2.statusCode == 200) {
 
+        Requtest  = FamilyModel.fromJson(response2.data['Families'])  ;
 
-         Requtest  = FamilyModel.fromJson(response2.data['Families'])  ;
-
-         
       }
-    } catch (e) {
-      print(e);
-
+    } catch (e, s) {
+      _logError('CreateFamily', e, s);
 
     }
 
@@ -319,7 +365,8 @@ print(response2.data);
         'api/LeaveFamily',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('LeaveMyFamily', response2);
+
       if (response2.statusCode == 200) {
         LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: false);
 
@@ -331,9 +378,8 @@ print(response2.data);
 
         send=false;
       }
-    } catch (e) {
-      print(e);
-
+    } catch (e, s) {
+      _logError('LeaveMyFamily', e, s);
 
     }
 
@@ -353,20 +399,17 @@ print(response2.data);
         'api/LeaveFamily',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('RemoveFamilyMember', response2);
+
       if (response2.statusCode == 200) {
 
-
-
-
         send=true;
-       }else{
+      }else{
 
         send=false;
       }
-    } catch (e) {
-      print(e);
-
+    } catch (e, s) {
+      _logError('RemoveFamilyMember', e, s);
 
     }
 
@@ -386,9 +429,9 @@ print(response2.data);
         'api/Acceptjoin',
         data: formData,
       );
-      print(response2.data);
-      if (response2.statusCode == 200) {
+      _logResponse('AcceptFamilyRequest', response2);
 
+      if (response2.statusCode == 200) {
 
         send=true;
 
@@ -396,10 +439,9 @@ print(response2.data);
 
         send=false;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('AcceptFamilyRequest', e, s);
 
-     
     }
 
     return send;
@@ -421,20 +463,18 @@ print(response2.data);
         'api/RemoveAdmin',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('RemoveAdmin', response2);
+
       if (response2.statusCode == 200) {
 
-
-
-
         send=true;
-         
+
       }else{
 
         send=false;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('RemoveAdmin', e, s);
 
     }
 
@@ -455,20 +495,19 @@ print(response2.data);
         'api/AddAdmins',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('AddAdmin', response2);
+
       if (response2.statusCode == 200) {
         LoginViewmodel user=  Provider.of<LoginViewmodel>(context,listen: false);
 
-
-
         send=true;
-         
+
       }else{
 
         send=false;
       }
-    } catch (e) {
-      print(e);
+    } catch (e, s) {
+      _logError('AddAdmin', e, s);
 
     }
 
@@ -488,17 +527,17 @@ print(response2.data);
         'api/Canclejoin',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('CanclejoinRequesr', response2);
+
       if (response2.statusCode == 200) {
 
         send=true;
-       }else{
+      }else{
 
         send=false;
       }
-    } catch (e) {
-      print(e);
-
+    } catch (e, s) {
+      _logError('CanclejoinRequesr', e, s);
 
     }
 
@@ -518,7 +557,8 @@ print(response2.data);
         'api/Canclejoin',
         data: formData,
       );
-      print(response2.data);
+      _logResponse('CancleMemberjoinRequesr', response2);
+
       if (response2.statusCode == 200) {
 
         send=true;
@@ -526,9 +566,8 @@ print(response2.data);
 
         send=false;
       }
-    } catch (e) {
-      print(e);
-
+    } catch (e, s) {
+      _logError('CancleMemberjoinRequesr', e, s);
 
     }
 

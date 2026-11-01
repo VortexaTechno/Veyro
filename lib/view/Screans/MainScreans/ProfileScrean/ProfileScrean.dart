@@ -441,8 +441,7 @@ class ProfileScrean extends StatelessWidget {
                       InkWell(
                         onTap: () {
                           Family.GetFamily(Val: user.userinfo?.MyFamil);
-                          navigateTo(
-                              context: context, screen: FamilyProfileScrean());
+                          navigateTo(context: context, screen: FamilyProfileScrean());
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5),
@@ -452,21 +451,23 @@ class ProfileScrean extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Image.asset(
-                                      Family.Levels.where((element) =>
-                                              element['Coins'] <=
-                                              user.userinfo?.MyFamil?.karisma)
-                                          .last['image'],
-                                      height: 30),
-                                  SizedBox(
-                                    width: 10,
+                                  Builder(
+                                    builder: (context) {
+                                      final karisma = user.userinfo?.MyFamil?.karisma ?? 0;
+                                      final matched = Family.Levels
+                                          .where((element) => (element['Coins'] ?? 0) <= karisma)
+                                          .toList();
+                                      final levelImage = matched.isNotEmpty
+                                          ? matched.last['image']
+                                          : Family.Levels.first['image'];
+                                      return Image.asset(levelImage, height: 30);
+                                    },
                                   ),
+                                  SizedBox(width: 10),
                                   Text(
                                     getLang(key: "Family", context: context),
                                     style: TextStyle(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 15,
-                                        height: 2),
+                                        fontWeight: FontWeight.w400, fontSize: 15, height: 2),
                                   )
                                 ],
                               ),
