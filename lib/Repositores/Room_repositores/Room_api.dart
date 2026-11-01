@@ -920,54 +920,147 @@ print(response2.data);
 
   }
 
-  Future<ListoflEaderboardcategoryRoom?>getRoomLeaderboard(context)async {
-    ListoflEaderboardcategory ? Leaderboardsupporter;
-    ListoflEaderboardcategory ? Leaderboardsupported;
-    ListoflEaderboardcategoryRoom ?LeaderboardRoom;
+  Future<ListoflEaderboardcategoryRoom?> getRoomLeaderboard(context) async {
+    ListoflEaderboardcategoryRoom? LeaderboardRoom;
+
     try {
+      debugPrint('========== GetRoomLeaderboard REQUEST ==========');
+      debugPrint('METHOD: GET');
+      debugPrint('URL: ${dio.options.baseUrl}/api/GetRoomLeaderboard');
+
       Response response2 = await dio.get(
         '/api/GetRoomLeaderboard',
       );
 
+      debugPrint('========== GetRoomLeaderboard RESPONSE ==========');
+      debugPrint('STATUS CODE: ${response2.statusCode}');
+      debugPrint('RESPONSE DATA: ${response2.data}');
+      debugPrint('RESPONSE HEADERS: ${response2.headers}');
+      debugPrint('=================================================');
+
       if (response2.statusCode == 200) {
+        final data = response2.data;
 
-        // Leaderboardsupporter=ListoflEaderboardcategory.fromJson(response2.data['Leaderboard']['supporter']);
-        //
-        // Leaderboardsupported=ListoflEaderboardcategory.fromJson(response2.data['Leaderboard']['Recipient']);
-        LeaderboardRoom=ListoflEaderboardcategoryRoom.fromJson(response2.data['Leaderboard']['Room']);
+        if (data is Map &&
+            data['Leaderboard'] is Map &&
+            data['Leaderboard']['Room'] != null) {
+          LeaderboardRoom =
+              ListoflEaderboardcategoryRoom.fromJson(
+                Map<String, dynamic>.from(data['Leaderboard']['Room']),
+              );
+        } else {
+          debugPrint('INVALID RESPONSE FORMAT');
+          debugPrint('EXPECTED: Leaderboard.Room');
+          debugPrint('ACTUAL DATA: $data');
+        }
+      }
+    } on DioException catch (e) {
+      debugPrint('========== GetRoomLeaderboard DIO ERROR ==========');
+      debugPrint('REQUEST URL: ${e.requestOptions.uri}');
+      debugPrint('REQUEST METHOD: ${e.requestOptions.method}');
+      debugPrint('STATUS CODE: ${e.response?.statusCode}');
+      debugPrint('ERROR RESPONSE: ${e.response?.data}');
+      debugPrint('ERROR MESSAGE: ${e.message}');
+      debugPrint('ERROR TYPE: ${e.type}');
+      debugPrint('===================================================');
 
+      final data = e.response?.data;
 
-  }
-    } catch (e) {
+      if (context != null) {
+        final message = data is Map
+            ? data['errNum'] ??
+            data['msg'] ??
+            data['message']
+            : null;
 
+        Dialogs().ShowErrorToast(
+          message?.toString() ??
+              e.message ??
+              'حدث خطأ أثناء الاتصال بالسيرفر',
+          context,
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('========== GetRoomLeaderboard UNKNOWN ERROR ==========');
+      debugPrint('ERROR: $e');
+      debugPrint('STACK TRACE: $stackTrace');
+      debugPrint('=======================================================');
     }
 
-    return LeaderboardRoom ;
-
+    return LeaderboardRoom;
   }
-  Future<ListoflEaderboardcategory?>getGiverLeaderboard(context)async {
-    ListoflEaderboardcategory ? Leaderboardsupporter;
+
+
+  Future<ListoflEaderboardcategory?> getGiverLeaderboard(context) async {
+    ListoflEaderboardcategory? Leaderboardsupporter;
 
     try {
+      debugPrint('========== GetGiverLeaderboard REQUEST ==========');
+      debugPrint('METHOD: GET');
+      debugPrint('URL: ${dio.options.baseUrl}/api/GetGiverLeaderboard');
+
       Response response2 = await dio.get(
         '/api/GetGiverLeaderboard',
       );
 
+      debugPrint('========== GetGiverLeaderboard RESPONSE ==========');
+      debugPrint('STATUS CODE: ${response2.statusCode}');
+      debugPrint('RESPONSE DATA: ${response2.data}');
+      debugPrint('RESPONSE HEADERS: ${response2.headers}');
+      debugPrint('==================================================');
+
       if (response2.statusCode == 200) {
+        final data = response2.data;
 
-        Leaderboardsupporter=ListoflEaderboardcategory.fromJson(response2.data['Leaderboard']['supporter']);
-
-
-
-
-
+        if (data is Map &&
+            data['Leaderboard'] is Map &&
+            data['Leaderboard']['supporter'] != null) {
+          Leaderboardsupporter =
+              ListoflEaderboardcategory.fromJson(
+                Map<String, dynamic>.from(
+                  data['Leaderboard']['supporter'],
+                ),
+              );
+        } else {
+          debugPrint('INVALID RESPONSE FORMAT');
+          debugPrint('EXPECTED: Leaderboard.supporter');
+          debugPrint('ACTUAL DATA: $data');
+        }
       }
-    } catch (e) {
+    } on DioException catch (e) {
+      debugPrint('========== GetGiverLeaderboard DIO ERROR ==========');
+      debugPrint('REQUEST URL: ${e.requestOptions.uri}');
+      debugPrint('REQUEST METHOD: ${e.requestOptions.method}');
+      debugPrint('STATUS CODE: ${e.response?.statusCode}');
+      debugPrint('ERROR RESPONSE: ${e.response?.data}');
+      debugPrint('ERROR MESSAGE: ${e.message}');
+      debugPrint('ERROR TYPE: ${e.type}');
+      debugPrint('====================================================');
 
+      final data = e.response?.data;
+
+      if (context != null) {
+        final message = data is Map
+            ? data['errNum'] ??
+            data['msg'] ??
+            data['message']
+            : null;
+
+        Dialogs().ShowErrorToast(
+          message?.toString() ??
+              e.message ??
+              'حدث خطأ أثناء الاتصال بالسيرفر',
+          context,
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('========== GetGiverLeaderboard UNKNOWN ERROR ==========');
+      debugPrint('ERROR: $e');
+      debugPrint('STACK TRACE: $stackTrace');
+      debugPrint('========================================================');
     }
 
-    return Leaderboardsupporter ;
-
+    return Leaderboardsupporter;
   }
 
   Future<WeeklyStarModel?>GetWeeklystar(context)async {
