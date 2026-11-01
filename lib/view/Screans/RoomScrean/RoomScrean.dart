@@ -6,7 +6,6 @@ import 'package:ahlachat/view/Screans/MainScreans/MessageScrean/MessageScrean.da
 import 'package:ahlachat/view/Screans/RoomScrean/widgets/GlopalGoft/GlopalGift.dart';
 
 import 'package:ahlachat/view/Screans/RoomScrean/widgets/GuessWidgets/GessRoomWidget.dart';
-import 'package:ahlachat/view/Screans/RoomScrean/widgets/MusicPlayer.dart';
 import 'package:ahlachat/viewmodels/Auth_Viewmodel/LoginViewModel.dart';
 import 'package:ahlachat/viewmodels/InboxRooms_Viewmodel/InboxRoomsViewmodel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -22,21 +21,15 @@ import 'package:ahlachat/view/Screans/RoomScrean/widgets/SentGift/SentGift.dart'
 import 'package:ahlachat/view/Screans/RoomScrean/widgets/UserChairs/UserChairs.dart';
 import 'package:ahlachat/viewmodels/RoomPlay_ViewModel/RoomPlayViewModel.dart';
 import 'package:ahlachat/viewmodels/Room_Viewmodel/Room_Viewmodel.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:lottie/lottie.dart';
-import 'package:motion_toast/motion_toast.dart';
-import 'package:motion_toast/resources/arrays.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:ahlachat/view/Screans/RoomScrean/widgets/ChatWedget.dart';
 import 'package:ahlachat/view/Screans/RoomScrean/widgets/Headwidget.dart';
-
 import 'package:flutter_svga/flutter_svga.dart';
-import 'package:timer_count_down/timer_controller.dart';
 import 'package:timer_count_down/timer_count_down.dart';
-import '../../../util/helperclass.dart';
 import '../../../util/styles.dart';
 import '../../../viewmodels/Gifts_Viewmodel/Gifts_Viewmodel.dart';
+import '../GamesScrean/games_room_screen.dart';
 
 class RoomScrean extends StatefulWidget {
   const RoomScrean({Key? key}) : super(key: key);
@@ -138,10 +131,28 @@ class _RoomScreanState extends State<RoomScrean> with TickerProviderStateMixin, 
                       ],
                     ),
                   ),
-                  const SafeArea(
+                   SafeArea(
                     top: false,
                     bottom: true,
-                    child: ChatWidgets(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () => showModalBottomSheet(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              isScrollControlled: true,
+                              builder: (_) => RoomGamesSheet(roomContext: context),
+                            ),
+                            child: Image.asset(Images.roomGames, height: 38),
+                          ),
+                        ),
+                        SizedBox(height: 10,),
+                        const ChatWidgets(),
+                      ],
+                    ),
                   ),
                 ],
               ),

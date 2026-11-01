@@ -42,16 +42,16 @@ class ChatWidgets extends StatelessWidget {
           },
             child: Image.asset('assets/image/ic_room_msg.png',height:35 ),
           ),
-          SizedBox(width: 5,) ,
-          InkWell(onTap: (){
-            showModalBottomSheet(barrierColor:Colors.transparent,backgroundColor:  Colors.white ,shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight:Radius.circular(10), )),
-              context: context,
-              builder: (context) {
-                return Entertainment();
-              },
-            );
-
-          },child: Image.asset(Images.entertainment,height:35)),
+           SizedBox(width: 10,) ,
+          // InkWell(onTap: (){
+          //   showModalBottomSheet(barrierColor:Colors.transparent,backgroundColor:  Colors.white ,shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight:Radius.circular(10), )),
+          //     context: context,
+          //     builder: (context) {
+          //       return Entertainment();
+          //     },
+          //   );
+          //
+          // },child: Image.asset(Images.entertainment,height:35)),
           if(JoinChairs)    if(Room.checkadmin(context: context)||(Room.Currentroom?.supervisorsId?.contains(user.userinfo?.id.toString())??false))       InkWell(onTap: (){
             showModalBottomSheet(barrierColor:Colors.transparent,  backgroundColor: Colors.black,elevation: 0,shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(30),topRight:Radius.circular(30), )),
               context: context,

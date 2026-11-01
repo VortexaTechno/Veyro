@@ -230,6 +230,7 @@ class Images {
   static const String  CloseMic ="assets/image/CloseMic.png";
   static const String  SaveRoom ="assets/image/ic_audio_room_minimize.png";
   static const String  addRoom ="assets/image/addRoom.png" ;
+  static const String  roomGames ="assets/image/room_games.png" ;
 
   static const String  EnterName ="assets/image/icon_register_set_profile_nick.png" ;
   static const String  EnterLocation ="assets/image/icon_register_set_profile_location.png" ;
