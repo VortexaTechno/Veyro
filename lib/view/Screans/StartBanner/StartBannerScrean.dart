@@ -43,7 +43,7 @@ class StartBannerScrean extends StatelessWidget {
             },
               child: Container(width: SizeConfig.screenWidth!,height: SizeConfig.screenHeight!,
               child: CachedNetworkImage(
-                imageUrl: user.userinfo?.StarterBanner?.photo??'' ,fit: BoxFit.fill ,
+                imageUrl: user.StartBannerData?.photo??'' ,fit: BoxFit.fill ,
                 placeholder: (context, url) => Image.asset(Images.logo,fit: BoxFit.fill),
                 errorWidget: (context, url, error) => new Icon(Icons.error),
               ),

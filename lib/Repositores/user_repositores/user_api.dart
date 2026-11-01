@@ -1986,23 +1986,21 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
     };
 
   }
-
-  getAllconstant(context) async {
+  Future<dynamic> getAllconstant(context) async {
     try {
-      var avatars = await dio.get('api/GetConstData');
+      final response = await dio.get('api/GetConstData');
 
-      print('✅ URL: ${avatars.requestOptions.uri}');
-      print('✅ STATUS: ${avatars.statusCode}');
-      print('✅ DATA: ${avatars.data}');
+      debugPrint('API STATUS: ${response.statusCode}');
+      debugPrint('API RESPONSE: ${response.data}');
 
-      return avatars.data;
-    } catch (exception) {
-      print('❌ getAllconstant error: $exception');
+      return response.data;
 
-      if (exception is DioException) {
-        print('❌ URL: ${exception.requestOptions.uri}');
-        print('❌ STATUS: ${exception.response?.statusCode}');
-        print('❌ RESPONSE: ${exception.response?.data}');
+    } catch (e) {
+      debugPrint('❌ API ERROR: $e');
+
+      if (e is DioException) {
+        debugPrint('API ERROR STATUS: ${e.response?.statusCode}');
+        debugPrint('API ERROR DATA: ${e.response?.data}');
       }
 
       return null;

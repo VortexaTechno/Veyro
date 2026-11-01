@@ -100,14 +100,25 @@ class _SplashScreanState extends State<SplashScrean> {
 
       if (!mounted) return;
 
-      await checklogin();
+      final userState = Provider.of<LoginViewmodel>(
+        context,
+        listen: false,
+      );
+
+// تحميل بيانات الـ Constants
+      await userState.getAllconstant(context);
 
       if (!mounted) return;
 
-      await Provider.of<LoginViewmodel>(
-        context,
-        listen: false,
-      ).getAllconstant(context);
+// تحديد الصفحة بعد تحميل البيانات
+      debugPrint(
+        'SPLASH BANNER PHOTO: ${userState.StartBannerData?.photo}',
+      );
+
+      // debugPrint(
+      //   'SPLASH BANNER STATUS: ${userState.StartBannerData?.status}',
+      // );
+      await checklogin();
     } catch (e, stackTrace) {
       debugPrint('CONNECTIVITY CHECK ERROR: $e');
       debugPrintStack(stackTrace: stackTrace);
@@ -159,8 +170,15 @@ class _SplashScreanState extends State<SplashScrean> {
       }
 
       final userData = Map<String, dynamic>.from(decoded);
-      final user = usermodel.fromJson(userData);
+      final banner = userState.StartBannerData;
 
+      final user = usermodel.fromJson(userData);
+      debugPrint('========== START BANNER CHECK ==========');
+      debugPrint('BANNER EXISTS: ${banner != null}');
+      //debugPrint('BANNER STATUS: ${banner?.status}');
+      debugPrint('BANNER PHOTO: ${banner?.photo}');
+
+      debugPrint('========================================');
       if (user.id == null) {
         await prefs.remove('token');
         await prefs.remove('UserData');
@@ -178,9 +196,19 @@ class _SplashScreanState extends State<SplashScrean> {
 
       if (!mounted) return;
 
-      if (user.StarterBanner != null) {
+      if (banner != null &&
+         // banner.status == 1 &&
+          banner.photo != null &&
+          banner.photo!.isNotEmpty) {
+
+        debugPrint('OPENING START BANNER');
+
         userState.UpdateCurrentPage(StartBannerScrean());
+
       } else {
+
+        debugPrint('OPENING BOTTOM NAVIGATION');
+
         userState.UpdateCurrentPage(ButtomNavigation());
       }
 
