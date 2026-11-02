@@ -240,7 +240,11 @@ Text(getLang(context: context, key: "Privileges"),style: style3.copyWith(color: 
                               Text.rich( TextSpan(
                                   children: [
                                     TextSpan(
-                                      text: ' ${Vips.Vips[index].cost} ${getLang(context: context,key: "Coins")} -',style:TextStyle().copyWith(color:  Colors.white,fontSize: 18),
+                                      text: ' ${Vips.Vips[index].cost?.toStringAsFixed(0) ?? '0'} ${getLang(context: context, key: "Coins")} -',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                      ),
                                     ),
                                     TextSpan(
                                       text: ' ${Vips.Vips[index].day} ${getLang(context: context,key: "days")} ',style:TextStyle().copyWith(color: Colors.white,fontSize: 18),

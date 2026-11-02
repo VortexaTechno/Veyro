@@ -22,7 +22,7 @@ class VipModel {
   var hidden;
   String? createdAt;
   String? updatedAt;
-  int? cost;
+  double? cost;
   int? day;
   VipModel(
       {this.id,
@@ -66,7 +66,13 @@ class VipModel {
 
       return '${AppConstants.Image_URL}${value.toString()}';
     }
+    double? nullableDouble(dynamic value) {
+      if (value == null) return null;
 
+      if (value is num) return value.toDouble();
+
+      return double.tryParse(value.toString());
+    }
     id = nullableInt(json['id']);
 
     gif = imageUrl(json['Gif'] ?? json['gif']);
@@ -83,7 +89,7 @@ class VipModel {
     frame = nullableString(json['Frame']);
 
     level = nullableInt(json['Level']);
-    cost = nullableInt(json['cost']);
+    cost = nullableDouble(json['cost']);
     specialID = nullableInt(json['SpecialID']);
 
     profileEntry = imageUrl(json['ProfileEntry']);
@@ -110,6 +116,8 @@ class VipModel {
     data['Entry'] = this.urlentry;
     data['Frame'] = this.urlframe;
     data['Level'] = this.level;
+    data['cost'] = this.cost;
+    data['days'] = this.day;
     data['background_image'] =this.backgroundimage;
     data['SpecialID'] = this.specialID;
     data['ProfileEntry'] = this.profileEntry;

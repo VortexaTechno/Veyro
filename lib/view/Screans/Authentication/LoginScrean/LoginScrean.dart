@@ -6,7 +6,6 @@ import 'package:ahlachat/view/Screans/Authentication/IDloginScrean/IDloginScrean
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:provider/provider.dart';
 import '../../../../util/app_constants.dart';
 import '../../../../util/images.dart';

@@ -2,7 +2,7 @@ name: ahlachat
 description: A new Flutter project.
 publish_to: 'none'
 
-version: 1.0.34+34
+version: 1.0.35+35
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
@@ -27,7 +27,7 @@ dependencies:
   cherry_toast: ^1.0.9
   flutter_sound: ^9.2.13
   flutter_mentions:
-  flutter_jailbreak_detection: ^1.10.0
+  flutter_jailbreak_detection_plus: 1.10.7
   lottie:
   palestine_trusted_device: ^0.1.1
   flutter_fortune_wheel: ^1.2.0

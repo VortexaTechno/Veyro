@@ -748,18 +748,37 @@ print(userinfo?.MessageNumber);
   }
 
 
-  ByeVip({context,VipModel? vip})async{
+  Future<void> ByeVip({required context, VipModel? vip}) async {
     ShowGlopalLoading();
-    await userapi().ByeVip(context: context,Vip: vip,).then((value){
-      if(value?.id!=null){
 
-      //  userinfo?.MyVip=value;
-        userinfo?.coins= (userinfo?.coins??0)-(vip?.cost??0);
-        userinfo?.Karisma=(( userinfo?.Karisma??0)+((value?.Vip?.level??0)*LEVELAMOUNT)) as int?;
-        Dialogs().showtoast(getLang(context:NavigationService.navigatorKey.currentContext,key: "Done_Succ"));
+    try {
+      final value = await userapi().ByeVip(
+        context: context,
+        Vip: vip,
+      );
+
+      if (value?.id != null) {
+        userinfo?.coins =
+            (userinfo?.coins ?? 0) - (vip?.cost?.toInt() ?? 0);
+
+        userinfo?.Karisma =
+            (userinfo?.Karisma ?? 0) +
+                ((value?.Vip?.level ?? 0) * LEVELAMOUNT);
+
+        Dialogs().showtoast(
+          getLang(
+            context: NavigationService.navigatorKey.currentContext,
+            key: "Done_Succ",
+          ),
+        );
       }
+    } catch (e, stackTrace) {
+      print('ByeVip ERROR: $e');
+      print(stackTrace);
+    } finally {
       DismissGlopalLoading();
-    });
+    }
+
     notifyListeners();
   }
    UseVip({context,MyVipmodel? Myvip})async{
@@ -1358,10 +1377,27 @@ print(userinfo?.MessageNumber);
 
     notifyListeners();
   }
-  userinformation({ context}) async {
+  bool isFetchingUserInfo = false;
 
-    userinfo = await userapi().Userinfo( context: context);
-    notifyListeners();
+  Future<void> userinformation({
+    required BuildContext context,
+  }) async {
+    if (isFetchingUserInfo) return;
+
+    isFetchingUserInfo = true;
+
+    try {
+      final updatedUser = await userapi().Userinfo(context: context);
+
+      if (updatedUser.id != null) {
+        userinfo = updatedUser;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('USER INFORMATION ERROR: $e');
+    } finally {
+      isFetchingUserInfo = false;
+    }
   }
   userinformationID({ID, context}) async {
     showSpinner();
@@ -1378,28 +1414,49 @@ print(userinfo?.MessageNumber);
     });
     notifyListeners();
   }
-  updateNormalProfile({FlagCITY,ginder,City,token,context,Password, Description,name,PhoneNumber,year,month,day}) async {
-
+  Future<void> updateNormalProfile({
+    FlagCITY,
+    ginder,
+    City,
+    token,
+    context,
+    Password,
+    Description,
+    name,
+    PhoneNumber,
+    year,
+    month,
+    day,
+  }) async {
     ShowGlopalLoading();
 
-
-    await userapi().UpdatenormalProfile(
+    try {
+      final updatedUser = await userapi().UpdatenormalProfile(
         token: token,
         Description: Description,
-        context: context,Flag:FlagCITY,
-         name:name,ginder:ginder,Image: Edimage,Password: Password,PhoneNumber:PhoneNumber, City:City, day: day,month: month,year: year)
-        .then((value) {
+        context: context,
+        Flag: FlagCITY,
+        name: name,
+        ginder: ginder,
+        Image: Edimage,
+        Password: Password,
+        PhoneNumber: PhoneNumber,
+        City: City,
+        day: day,
+        month: month,
+        year: year,
+      );
 
-       if(value.id!=null){
-        userinfo?.password = value.password;
-        userinfo?.name = value.name;
-        userinfo?.description = value.description;
-        userinfo?.ginder = value.ginder;
-        userinfo?.image=value.image;
+      if (updatedUser.id != null) {
+        userinfo = updatedUser;
+        Edimage = null;
+        notifyListeners();
       }
-       DismissGlopalLoading();
-    });
-    notifyListeners();
+    } catch (e) {
+      debugPrint('UPDATE PROFILE VIEWMODEL ERROR: $e');
+    } finally {
+      DismissGlopalLoading();
+    }
   }
   updatephoto({token, photo, context,avatar}) async {
     showSpinner2();

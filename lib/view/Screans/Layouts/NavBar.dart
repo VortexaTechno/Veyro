@@ -31,7 +31,7 @@ import '../../../viewmodels/Socket_ViewModel/GlopelSocketModelView.dart';
 import '../../../viewmodels/Socket_ViewModel/SocketUserModelView.dart';
 import '../MainScreans/MainScrean/widgets/Taps.dart';
 import '../MainScreans/ProfileScrean/ProfileScrean.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
+import 'package:flutter_jailbreak_detection_plus/flutter_jailbreak_detection_plus.dart';
 
 
 class ButtomNavigation extends StatefulWidget {
@@ -90,8 +90,8 @@ class _ButtomNavigationState extends State<ButtomNavigation> with   WidgetsBindi
     bool developerMode;
 
     try {
-      jailbroken = await FlutterJailbreakDetection.jailbroken;
-      developerMode = await FlutterJailbreakDetection.developerMode;
+      jailbroken = await FlutterJailbreakDetectionPlus.jailbroken;
+      developerMode = await FlutterJailbreakDetectionPlus.developerMode;
     } on PlatformException {
       jailbroken = true;
       developerMode = true;
@@ -188,23 +188,41 @@ class _ButtomNavigationState extends State<ButtomNavigation> with   WidgetsBindi
   int Checkonce2=0;
   int Checkonce3=0;
   void _onItemTapped(int index) {
-print(index);
+    print('Selected Tab Index: $index');
+
     setState(() {
       _selectedIndex = index;
-      if(index==2&&Checkonce==0){
-        Checkonce=1;
-        Provider.of<InboxroomViewModel>(context,listen: false).GetInboxroom(context: context);
-      }else if(index==1&&Checkonce2==0){
-        Checkonce2=1;
-        Provider.of<MomentViewModel>(context,listen: false).GetPostes(context: context);
-        Provider.of<MomentViewModel>(context,listen: false).GetFollowPostes(context: context);
-        // Provider.of<InboxroomViewModel>(context,listen: false).GetInboxroom(context: context);
-      }else if(index==2&&Checkonce3==0){
-        Checkonce3=1;
-        Provider.of<InboxroomViewModel>(context,listen: false).GetInboxroom(context: context);
-      }
-
     });
+
+    if (index == 3) {
+      debugPrint('========== PROFILE TAB OPENED ==========');
+
+      Provider.of<LoginViewmodel>(
+        context,
+        listen: false,
+      ).userinformation(context: context);
+    }
+
+    if (index == 2 && Checkonce == 0) {
+      Checkonce = 1;
+
+      Provider.of<InboxroomViewModel>(
+        context,
+        listen: false,
+      ).GetInboxroom(context: context);
+    } else if (index == 1 && Checkonce2 == 0) {
+      Checkonce2 = 1;
+
+      Provider.of<MomentViewModel>(
+        context,
+        listen: false,
+      ).GetPostes(context: context);
+
+      Provider.of<MomentViewModel>(
+        context,
+        listen: false,
+      ).GetFollowPostes(context: context);
+    }
   }
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);

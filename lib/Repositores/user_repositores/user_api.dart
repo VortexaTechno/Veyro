@@ -51,16 +51,46 @@ class userapi extends UserRepository {
   List<usergifts> UserGifts=[];
   List<Notificationmodel>Notifications=[];
   final ImagePicker _picker = ImagePicker();
-  var dio = Dio(
+  late final Dio dio = Dio(
     BaseOptions(
       baseUrl: AppConstants.BASE_URL,
-      headers: { 
+      headers: {
         'Accept': 'application/json',
-        'Authorization':Token,
-        'DeviceId':deviceId,
-        'awqeASERQW':'8/325*mAIOEN',
-        'userid':UserId.toString(),
-        'UserIP':UserIP,
+        'DeviceId': deviceId,
+        'awqeASERQW': '8/325*mAIOEN',
+        'UserIP': UserIP,
+      },
+    ),
+  )..interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final prefs = await SharedPreferences.getInstance();
+
+        final savedToken = prefs.getString('token');
+        final currentToken = Token;
+
+        final authToken =
+        currentToken != null && currentToken.isNotEmpty
+            ? currentToken
+            : savedToken;
+
+        if (authToken != null &&
+            authToken.isNotEmpty &&
+            authToken != 'null') {
+          options.headers['Authorization'] = authToken;
+        } else {
+          options.headers.remove('Authorization');
+        }
+
+        options.headers['userid'] = UserId.toString();
+
+        debugPrint('========== DIO AUTH HEADERS ==========');
+        debugPrint('TOKEN: ${authToken == null ? "NULL" : "EXISTS"}');
+        debugPrint('USER ID: $UserId');
+        debugPrint('REQUEST: ${options.uri}');
+        debugPrint('======================================');
+
+        handler.next(options);
       },
     ),
   );
@@ -135,36 +165,80 @@ int target=0;
     return target;
 
   }
-  Future<List<usergifts> >  GetUserGifts({context})async {
+  Future<List<usergifts>> GetUserGifts({context}) async {
+    UserGifts.clear();
+
     try {
+      print('========== GetUserGifts REQUEST ==========');
+      print('URL: ${dio.options.baseUrl}/api/GetMyUserGifts/$UserId');
+      print('USER ID: $UserId');
+
       Response response2 = await dio.get(
         '/api/GetMyUserGifts/$UserId',
       );
 
+      print('========== GetUserGifts RESPONSE ==========');
+      print('STATUS CODE: ${response2.statusCode}');
+      print('RESPONSE DATA: ${response2.data}');
+      print('RESPONSE HEADERS: ${response2.headers}');
+      print('===========================================');
+
       if (response2.statusCode == 200) {
-        List list =response2.data['UserGifts'];
+        final data = response2.data;
 
-        list.forEach((element) {
-          UserGifts.add(usergifts.fromJson(element));
-        });
+        if (data is Map && data['UserGifts'] is List) {
+          List list = data['UserGifts'];
 
+          for (var element in list) {
+            UserGifts.add(
+              usergifts.fromJson(
+                Map<String, dynamic>.from(element),
+              ),
+            );
+          }
 
-      }
-    } catch (e) {
-      print(e);
-      if (e is DioError) {
-         
-        Dialogs().ShowErrorToast(e.response!.data['errNum'],context);
-        if (e.response!.data['errNum'] == '3500') {
-
+          print('✅ User Gifts Loaded: ${UserGifts.length}');
+        } else {
+          print('⚠️ INVALID RESPONSE FORMAT');
+          print('EXPECTED: UserGifts as List');
+          print('ACTUAL DATA: $data');
         }
-      } else {
-        print(e);
       }
+    } on DioException catch (e, stackTrace) {
+      print('========== GetUserGifts DIO ERROR ==========');
+      print('ERROR TYPE: ${e.type}');
+      print('ERROR MESSAGE: ${e.message}');
+      print('REQUEST URL: ${e.requestOptions.uri}');
+      print('REQUEST METHOD: ${e.requestOptions.method}');
+      print('REQUEST DATA: ${e.requestOptions.data}');
+      print('STATUS CODE: ${e.response?.statusCode}');
+      print('RESPONSE DATA: ${e.response?.data}');
+      print('RESPONSE HEADERS: ${e.response?.headers}');
+      print('STACK TRACE: $stackTrace');
+      print('============================================');
+
+      final responseData = e.response?.data;
+
+      if (responseData is Map) {
+        final errNum = responseData['errNum'];
+
+        if (errNum != null) {
+          Dialogs().ShowErrorToast(errNum.toString(), context);
+
+          if (errNum.toString() == '3500') {
+            // Handle error 3500 here
+          }
+        }
+      }
+    } catch (e, stackTrace) {
+      print('========== GetUserGifts UNKNOWN ERROR ==========');
+      print('ERROR: $e');
+      print('ERROR TYPE: ${e.runtimeType}');
+      print('STACK TRACE: $stackTrace');
+      print('================================================');
     }
 
     return UserGifts;
-
   }
   List<usermusic> UserMusic=[];
 
@@ -1301,7 +1375,7 @@ int target=0;
         "user_id": UserId.toString(),
         "vip_id": Vip?.id.toString(),
         "days": Vip?.day.toString(),
-        "cost": Vip?.cost.toString(),
+        "cost": Vip?.cost?.toString(),
       });
 
       Response response2 = await dio.post(
@@ -1309,36 +1383,45 @@ int target=0;
         data: formData,
       );
 
-      // Print response details
       print('========== ByeVip RESPONSE ==========');
       print('STATUS CODE: ${response2.statusCode}');
       print('RESPONSE DATA: ${response2.data}');
-      print('RESPONSE HEADERS: ${response2.headers}');
       print('=====================================');
 
       if (response2.statusCode == 200) {
-        myvip = MyVipmodel.fromJson(response2.data['MyVip']);
-      } else {
-        print('ByeVip FAILED WITH STATUS: ${response2.statusCode}');
+        final data = response2.data;
+
+        if (data is Map && data['status'] == true) {
+          final myVipData = data['MyVip'];
+
+          // API returned success but MyVip is null
+          if (myVipData == null) {
+            print('ByeVip: MyVip is null despite successful response');
+            return null;
+          }
+
+          if (myVipData is Map<String, dynamic>) {
+            myvip = MyVipmodel.fromJson(myVipData);
+            return myvip;
+          }
+
+          print('ByeVip: Invalid MyVip response format: $myVipData');
+        }
       }
     } on DioException catch (e) {
       print('========== ByeVip DIO ERROR ==========');
       print('REQUEST URL: ${e.requestOptions.uri}');
-      print('REQUEST METHOD: ${e.requestOptions.method}');
       print('STATUS CODE: ${e.response?.statusCode}');
       print('RESPONSE DATA: ${e.response?.data}');
-      print('ERROR MESSAGE: ${e.message}');
-      print('ERROR TYPE: ${e.type}');
+      print('ERROR: ${e.message}');
       print('======================================');
 
       final data = e.response?.data;
 
       if (context != null && data is Map) {
-        final errorMessage =
-            data['msg'] ??
-                data['message'] ??
-                data['errNum'] ??
-                'حدث خطأ أثناء شراء VIP';
+        final errorMessage = data['msg'] ??
+            data['message'] ??
+            'حدث خطأ أثناء شراء VIP';
 
         Dialogs().ShowErrorRegesterToast(
           errorMessage.toString(),
@@ -1346,13 +1429,11 @@ int target=0;
         );
       }
     } catch (e, stackTrace) {
-      print('========== ByeVip UNKNOWN ERROR ==========');
-      print('ERROR: $e');
-      print('STACK TRACE: $stackTrace');
-      print('==========================================');
+      print('ByeVip UNKNOWN ERROR: $e');
+      print(stackTrace);
     }
 
-    return myvip;
+    return null;
   }
 
 
@@ -1730,49 +1811,62 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
 
 
 
-  Future<usermodel> Userinfo({ context}) async {
-
-
+  Future<usermodel> Userinfo({context}) async {
     try {
-      FormData formData =   FormData.fromMap({
-        "":''
+      FormData formData = FormData.fromMap({
+        "": '',
       });
 
-      Response response2 = await dio.post(
+      Response response = await dio.post(
         '/api/userinfo',
         data: formData,
+        options: Options(
+          validateStatus: (status) => true,
+        ),
       );
 
+      debugPrint('========== USERINFO API ==========');
+      debugPrint('URL: ${response.requestOptions.uri}');
+      debugPrint('METHOD: ${response.requestOptions.method}');
+      debugPrint('REQUEST DATA: ${response.requestOptions.data}');
+      debugPrint('REQUEST HEADERS: ${response.requestOptions.headers}');
+      debugPrint('STATUS CODE: ${response.statusCode}');
+      debugPrint('RESPONSE DATA: ${response.data}');
+      debugPrint('==================================');
 
-      if (response2.statusCode == 200) {
-        userinfo = usermodel.fromJson(response2.data['users']);
+      if (response.statusCode == 200) {
+        final data = response.data['users'];
+        final updatedUser = usermodel.fromJson(data);
 
-        if(userinfo.ban==1||userinfo.ban=='1'){
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-
-          Navigator.pushNamed(context, AppConstants.Login_Screan);
-        prefs.remove('token');
-        }else{
-          Token=userinfo.rememperToken.toString();
-          UserId=userinfo.id.toString();
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('UserData', jsonEncode(response2.data['users']) ) ;
-
-          prefs.setString('token', userinfo.rememperToken.toString());
+        if (updatedUser.ban == 1 || updatedUser.ban == '1') {
+          throw Exception('USER_BANNED');
         }
 
+        Token = updatedUser.rememperToken.toString();
+        UserId = updatedUser.id.toString();
 
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString('UserData', jsonEncode(data));
+
+        if (updatedUser.rememperToken != null) {
+          await prefs.setString(
+            'token',
+            updatedUser.rememperToken.toString(),
+          );
+        }
+
+        return updatedUser;
       }
-    } catch (e) {
 
-
-      Navigator.pushNamed(context, AppConstants.Login_Screan);
-
-
+      throw Exception(
+        'Userinfo failed: ${response.statusCode} - ${response.data}',
+      );
+    } catch (e, stackTrace) {
+      debugPrint('USERINFO API ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      rethrow;
     }
-
-
-    return userinfo;
   }
   Future<usermodel> UserinfoID({ID, context}) async {
     LoginViewmodel user = Provider.of<LoginViewmodel>(context, listen: false);
@@ -1809,71 +1903,109 @@ if(userinfo.music!=null&&userinfo.music!=''&&Gmail==null){
 
 
 
-   Future<usermodel> UpdatenormalProfile({Flag,ginder,Password,day,year,month,City,Description ,context,token,name,PhoneNumber,Image}) async {
-
-     print(Password);
-     print(name);
-     print(City);
-     print(ginder);  print(day);  print(year); print(month);print(Password);
-    var  map;
-    if(Image!=null){
-      map={
-        "description": Description.toString(),
-
-        //"password":password.toString(),
-        "name": name.toString(),
-        "image":await MultipartFile.fromFile(Image?.path, filename: Image?.path?.split('/')?.last),
-        "City":City,
-        "ginder":ginder.toString(),
-        "day":day.toString(),
-        "year":year.toString(),
-        "month":month.toString(),
-        "Flag":Flag.toString(),
-        "password":Password.toString(),
-      };
-    }else{
-      map={
-        "description": Description.toString(),
-
-         "name": name.toString(),
-        "City":City,
-        "ginder":ginder.toString(),
-        "day":day.toString(),
-        "year":year.toString(),
-        "month":month.toString(),
-        "Flag":Flag.toString(),
-       "password":Password.toString(),
-      };
-    }
-
-    map.removeWhere((key, value) => key == null || value == null||value==''||value=='null');
-
+  Future<usermodel> UpdatenormalProfile({
+    Flag,
+    ginder,
+    Password,
+    day,
+    year,
+    month,
+    City,
+    Description,
+    context,
+    token,
+    name,
+    PhoneNumber,
+    Image,
+  }) async {
     try {
-      FormData formData = new FormData.fromMap(map);
+      final Map<String, dynamic> map = {
+        "description": Description,
+        "name": name,
+        "City": City,
+        "ginder": ginder?.toString(),
+        "day": day?.toString(),
+        "year": year?.toString(),
+        "month": month?.toString(),
+        "Flag": Flag,
+        "password": Password,
+      };
 
-      Response response2 = await dio.post(
-        'api/UpdateProfile',
+      if (Image != null) {
+        map["image"] = await MultipartFile.fromFile(
+          Image.path,
+          filename: Image.path.split('/').last,
+        );
+      }
+
+      map.removeWhere((key, value) =>
+      value == null ||
+          (value is String &&
+              (value.isEmpty || value == 'null')));
+
+      final FormData formData = FormData.fromMap(map);
+
+      debugPrint('========== UPDATE PROFILE REQUEST ==========');
+      debugPrint('FIELDS: ${map.keys.toList()}');
+
+      for (final entry in map.entries) {
+        if (entry.value is MultipartFile) {
+          debugPrint('${entry.key}: IMAGE FILE');
+        } else {
+          debugPrint('${entry.key}: ${entry.value}');
+        }
+      }
+
+      final response = await dio.post(
+        '/api/UpdateProfile',
         data: formData,
+        options: Options(
+          validateStatus: (status) => true,
+        ),
       );
-      print(response2.data);    print(response2.data);
-      if (response2.statusCode == 200) {
-        userinfo = usermodel.fromJson(response2.data['users']);
-        Dialogs().showtoast('Profile Updated');
-        //Navigator.pushNamed(context, '${AppConstants.Buttom_Navigation}');
-      } else {
-        print(response2.statusCode);
-      }
-    } catch (e) {
-      print(e);
-      if (e is DioError) {
-        print(e.response?.data['errNum']);
-        Dialogs().ShowErrorToast(e.response!.data['errNum'],context);
-      } else {
 
+      debugPrint('========== UPDATE PROFILE RESPONSE ==========');
+      debugPrint('URL: ${response.requestOptions.uri}');
+      debugPrint('STATUS: ${response.statusCode}');
+      debugPrint('DATA: ${response.data}');
+      debugPrint('==============================================');
+
+      if (response.statusCode == 200) {
+        final updatedUser = usermodel.fromJson(response.data['users']);
+
+        userinfo = updatedUser;
+
+        Dialogs().showtoast('Profile Updated');
+
+        return updatedUser;
       }
+
+      final errorData = response.data;
+
+      if (errorData is Map) {
+        Dialogs().ShowErrorToast(
+          errorData['errNum']?.toString() ??
+              errorData['msg']?.toString() ??
+              'Update failed',
+          context,
+        );
+      }
+
+      return userinfo;
+    } catch (e, stackTrace) {
+      debugPrint('========== UPDATE PROFILE ERROR ==========');
+      debugPrint('ERROR: $e');
+
+      if (e is DioException) {
+        debugPrint('STATUS: ${e.response?.statusCode}');
+        debugPrint('RESPONSE: ${e.response?.data}');
+        debugPrint('REQUEST: ${e.requestOptions.uri}');
+      }
+
+      debugPrintStack(stackTrace: stackTrace);
+
+      return userinfo;
     }
-    print(userinfo);
-    return userinfo;
   }
   FutureUpdatephoto({photo ,context,token,avatar}) async {
 

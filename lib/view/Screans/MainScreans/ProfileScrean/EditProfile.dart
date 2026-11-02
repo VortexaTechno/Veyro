@@ -384,8 +384,20 @@ body: Container(height: SizeConfig.screenHeight,width: SizeConfig.screenWidth,
           if(Username?.length==0){
             Dialogs().showtoast(getLang(context: context, key: "required"));
           }else {
-            user.updateNormalProfile(context: context,Password: Password,token: Token,name:Username,Description: Description,PhoneNumber: PhoneNumber,City:user.Name2,year: year,month: month,day: day,ginder:ginder,FlagCITY:user.Flag2);
-          }
+            user.updateNormalProfile(
+                          context: context,
+                          Password: Password,
+                          token: Token,
+                          name: Username,
+                          Description: Description,
+                          PhoneNumber: PhoneNumber,
+                          City: user.Name2,
+                          year: year,
+                          month: month,
+                          day: day,
+                          ginder: ginder,
+                          FlagCITY: user.Flag2);
+                    }
         },child: Container(child: Center(child: Text(getLang(context: context, key: "Save"),style: style1, )),height: 50, width: SizeConfig.screenWidth,decoration: BoxDecoration(color: MainColor,borderRadius: BorderRadius.circular(10)))),
       ),
       const SizedBox(height: Dimensions.FONT_SIZE_LARGE,),

@@ -39,7 +39,12 @@ import 'package:provider/provider.dart';
 
 import '../../../../viewmodels/Room_Viewmodel/Room_Viewmodel.dart';
 
-class ProfileScrean extends StatelessWidget {
+class ProfileScrean extends StatefulWidget {
+  @override
+  State<ProfileScrean> createState() => _ProfileScreanState();
+}
+
+class _ProfileScreanState extends State<ProfileScrean> {
   @override
   Widget build(BuildContext context) {
     LoginViewmodel user = Provider.of<LoginViewmodel>(context, listen: true);
@@ -108,6 +113,7 @@ class ProfileScrean extends StatelessWidget {
                             SizedBox(
                               width: 10,
                             ),
+
                             ProfileSideInfoWidgets(
                                 UserDate: user.userinfo,
                                 TextColor: Colors.white),
