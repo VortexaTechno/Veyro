@@ -1491,8 +1491,6 @@ Future<String?>  getId() async {
 
       final value = await userapi().getAllconstant(context);
 
-      debugPrint('RECEIVED VALUE: ${value != null}');
-
       if (value == null || value is! Map) {
         debugPrint('❌ GetConstData returned null');
         return;
@@ -1503,26 +1501,63 @@ Future<String?>  getId() async {
         return;
       }
 
-      // قراءة StartBanner
+      // ---------- StartBanner ----------
       final bannerJson = value['StartBanner'];
+      StartBannerData = bannerJson is Map
+          ? StartBannerModel.fromJson(Map<String, dynamic>.from(bannerJson))
+          : null;
 
-      if (bannerJson is Map) {
-        StartBannerData = StartBannerModel.fromJson(
-          Map<String, dynamic>.from(bannerJson),
-        );
-      } else {
-        StartBannerData = null;
+      // ---------- Emoji ----------
+      emojis.clear();
+      final emojiList = value['emoji'];
+      if (emojiList is List) {
+        for (final e in emojiList) {
+          if (e is Map) {
+            emojis.add(emojimodel.fromJson(Map<String, dynamic>.from(e)));
+          }
+        }
       }
 
-      debugPrint('========== SAVED START BANNER ==========');
-      debugPrint('PHOTO: ${StartBannerData?.photo}');
-      //debugPrint('STATUS: ${StartBannerData?.status}');
+      // ---------- Emoji Category ----------
+      emojisCategory.clear();
+      final catList = value['emojiCategory'];
+      if (catList is List) {
+        for (final c in catList) {
+          if (c is Map) {
+            emojisCategory
+                .add(emojecategory.fromJson(Map<String, dynamic>.from(c)));
+          }
+        }
+      }
+      debugPrint('✅ emojisCategory count: ${emojisCategory.length}');
+      for (final c in emojisCategory) {
+        debugPrint('   cat ${c.id} → ${c.emoji?.length} emojis');
+      }
 
-      // أكمل هنا باقي Parsing الموجود عندك
-      // Banner, emoji, Shipping, version وغيرها
+      // ---------- باقي الداتا (زي waitingConstDate) ----------
+      Banners.clear();
+      if (value['Banner'] is List) {
+        for (final b in value['Banner']) {
+          Banners.add(Bannerss.fromJson(b));
+        }
+      }
+
+      Shipping.clear();
+      if (value['Shipping'] is List) {
+        for (final s in value['Shipping']) {
+          Shipping.add(shipping.fromJson(s));
+        }
+      }
+
+      Giftcatigoris = value['catigoris'] ?? [];
+      LuckyGiftcatigoris = value['luckycatigoris'] ?? [];
+      Roomcatigoris = value['Roomcategory'] ?? [];
+      background = value['background'] ?? [];
+
+      AppLink = value['version']?['AppLink']?.toString() ?? '';
+      Appversion = value['version']?['version'];
 
       notifyListeners();
-
     } catch (e, stackTrace) {
       debugPrint('❌ GET CONSTANT ERROR: $e');
       debugPrintStack(stackTrace: stackTrace);
