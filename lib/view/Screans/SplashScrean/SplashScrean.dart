@@ -4,6 +4,7 @@ import 'package:ahlachat/util/Dialogs.dart';
 import 'package:ahlachat/view/Screans/Authentication/LoginScrean/LoginScrean.dart';
 import 'package:ahlachat/view/Screans/Layouts/NavBar.dart';
 import 'package:ahlachat/view/Screans/StartBanner/StartBannerScrean.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -32,6 +33,7 @@ class SplashScrean extends StatefulWidget {
 class _SplashScreanState extends State<SplashScrean> {
   bool _sessionCheckStarted = false;
   bool _sessionCheckCompleted = false;
+
 
   Future<void> checklanguage() async {
     final prefs = await SharedPreferences.getInstance();
@@ -66,15 +68,12 @@ class _SplashScreanState extends State<SplashScrean> {
       return true;
     }
   }
-
   Future<void> checkConnectitivy() async {
     if (_sessionCheckStarted) return;
-
     _sessionCheckStarted = true;
 
     try {
       final connectivityResult = await Connectivity().checkConnectivity();
-
       if (!mounted) return;
 
       final isConnected =
@@ -84,152 +83,99 @@ class _SplashScreanState extends State<SplashScrean> {
 
       if (!isConnected) {
         _sessionCheckStarted = false;
-
+        FlutterNativeSplash.remove(); // اشيل الـ splash عشان شاشة النت تظهر
         Dialogs().showtoast('Internet is offline');
-
-        Navigator.pushNamed(
-          context,
-          AppConstants.InternetConnection_Screan,
-        );
-
+        Navigator.pushNamed(context, AppConstants.InternetConnection_Screan);
         return;
       }
 
       await Helper().ids();
       Helper().checkVersion();
-
       if (!mounted) return;
 
-      final userState = Provider.of<LoginViewmodel>(
-        context,
-        listen: false,
-      );
-
-// تحميل بيانات الـ Constants
+      final userState = Provider.of<LoginViewmodel>(context, listen: false);
       await userState.getAllconstant(context);
-
       if (!mounted) return;
 
-// تحديد الصفحة بعد تحميل البيانات
-      debugPrint(
-        'SPLASH BANNER PHOTO: ${userState.StartBannerData?.photo}',
-      );
-
-      // debugPrint(
-      //   'SPLASH BANNER STATUS: ${userState.StartBannerData?.status}',
-      // );
       await checklogin();
     } catch (e, stackTrace) {
       debugPrint('CONNECTIVITY CHECK ERROR: $e');
       debugPrintStack(stackTrace: stackTrace);
-
       _sessionCheckStarted = false;
+      FlutterNativeSplash.remove();
     }
   }
 
   Future<void> checklogin() async {
-    final userState = Provider.of<LoginViewmodel>(
-      context,
-      listen: false,
-    );
+    final userState = Provider.of<LoginViewmodel>(context, listen: false);
 
     try {
       final prefs = await SharedPreferences.getInstance();
-
       final token = prefs.getString('token');
       final dataUser = prefs.getString('UserData');
-
-      debugPrint(
-        'SPLASH TOKEN EXISTS: '
-            '${token != null && token.trim().isNotEmpty}',
-      );
-
-      debugPrint(
-        'SPLASH USER DATA EXISTS: '
-            '${dataUser != null && dataUser.isNotEmpty}',
-      );
 
       if (token == null ||
           token.trim().isEmpty ||
           dataUser == null ||
           dataUser.isEmpty) {
-        userState.UpdateCurrentPage(LoginScrean());
-        _sessionCheckCompleted = true;
+        _finish(userState, LoginScrean());
         return;
       }
 
       final decoded = jsonDecode(dataUser);
-
       if (decoded is! Map) {
         await prefs.remove('token');
         await prefs.remove('UserData');
-
-        userState.UpdateCurrentPage(LoginScrean());
-        _sessionCheckCompleted = true;
+        _finish(userState, LoginScrean());
         return;
       }
 
-      final userData = Map<String, dynamic>.from(decoded);
-      final banner = userState.StartBannerData;
-
-      final user = usermodel.fromJson(userData);
-      debugPrint('========== START BANNER CHECK ==========');
-      debugPrint('BANNER EXISTS: ${banner != null}');
-      //debugPrint('BANNER STATUS: ${banner?.status}');
-      debugPrint('BANNER PHOTO: ${banner?.photo}');
-
-      debugPrint('========================================');
+      final user = usermodel.fromJson(Map<String, dynamic>.from(decoded));
       if (user.id == null) {
         await prefs.remove('token');
         await prefs.remove('UserData');
-
-        userState.UpdateCurrentPage(LoginScrean());
-        _sessionCheckCompleted = true;
+        _finish(userState, LoginScrean());
         return;
       }
 
       UserId = user.id.toString();
-
       userState.MyUSERINFO(user);
-
       userState.waitingConstDate(context);
 
       if (!mounted) return;
 
-      if (banner != null &&
-         // banner.status == 1 &&
+      final banner = userState.StartBannerData;
+      final hasBanner = banner != null &&
           banner.photo != null &&
-          banner.photo!.isNotEmpty) {
-
-        debugPrint('OPENING START BANNER');
-
-        userState.UpdateCurrentPage(StartBannerScrean());
-
-      } else {
-
-        debugPrint('OPENING BOTTOM NAVIGATION');
-
-        userState.UpdateCurrentPage(ButtomNavigation());
-      }
-
-      _sessionCheckCompleted = true;
-    } catch (e, stackTrace) {
-      debugPrint('SPLASH LOGIN ERROR: $e');
-      debugPrintStack(stackTrace: stackTrace);
+          banner.photo!.isNotEmpty;
 
       if (!mounted) return;
 
-      userState.UpdateCurrentPage(LoginScrean());
-      _sessionCheckCompleted = true;
+// من غير precache: افتح الصفحة على طول
+      _finish(userState, hasBanner ? StartBannerScrean() : ButtomNavigation());
+    } catch (e, stackTrace) {
+      debugPrint('SPLASH LOGIN ERROR: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      _finish(userState, LoginScrean());
     }
+  }
+
+  void _finish(LoginViewmodel userState, Widget page) {
+    userState.UpdateCurrentPage(page);
+    if (mounted) {
+      setState(() => _sessionCheckCompleted = true);
+    }
+    // شيل الـ native splash بعد ما أول فريم للصفحة الجديدة يترسم
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FlutterNativeSplash.remove();
+    });
   }
 
   @override
   void initState() {
     super.initState();
-
-    FlutterNativeSplash.remove();
-
+    // ❌ شيلنا FlutterNativeSplash.remove() من هنا
     checkemulator();
     checklanguage();
     checkConnectitivy();
@@ -239,16 +185,14 @@ class _SplashScreanState extends State<SplashScrean> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-
-    final userState = Provider.of<LoginViewmodel>(
-      context,
-      listen: true,
-    );
+    final userState = Provider.of<LoginViewmodel>(context, listen: true);
 
     if (!_sessionCheckCompleted) {
-      return const Scaffold(
+      // نفس شكل الـ native splash عشان مايبقاش فيه فرق (مفيش loading)
+      return Scaffold(
+        backgroundColor: Colors.white, // خليها نفس لون الـ splash بتاعك
         body: Center(
-          child: CircularProgressIndicator(),
+          child: Image.asset(Images.logo, width: 180),
         ),
       );
     }
